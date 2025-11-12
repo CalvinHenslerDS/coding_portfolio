@@ -12,18 +12,27 @@
 
 # Solution Attempt:
 
+# Define a function
+def is_string(input_string):
+
+    # Check whether input_string begins with "Is"
+    if input_string[:2] != "Is":
+
+        # Add "Is" to the beginning of input_string if it does not already begin with "Is"
+        input_string = "Is" + input_string
+
+    else:
+        pass
+
+    # Print the new string
+    print(input_string)
+
+    return input_string
 
 # Prompt the user to input a string
 input_string = input("Input a string: ")
 
-def is_string(input_string):
-    if input_string[:2] != "Is":
-        input_string = "Is" + input_string
-    else:
-        pass
-    print(input_string)
-    return input_string
-
+# Call the is_string function
 is_string(input_string)
 
 

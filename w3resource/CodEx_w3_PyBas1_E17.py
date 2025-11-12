@@ -13,25 +13,31 @@
 # Solution Attempt:
 
 
-# Define a function that takes in the input as an argument and checks its proximity to 1000 and 2000, printing proximity statements as appropriate
+# Define a function
 def check_proximity(number):
+
+    # Check whether the input number is within 100 of 1000 and print an appropriate statement
     if number >= 1000 - 100 and number <= 1000 + 100:
         print("The input is within 100 of 1000 or 2000")
+
+    # Check whether the input number is within 100 of 2000 and print an appropriate statement
     elif number >= 2000 - 100 and number <= 2000 + 100:
         print("The input is within 100 of 1000 or 2000")
+
+    # Notify the user if the input is not within 100 of 1000 or 2000
     else:
         print("The input is not within 100 of 1000 or 2000")
+
     return
 
 # Prompt user to input a number
 number = float(input("Input a number: "))
 
-# Call the function
+# Call the check_proximity function
 check_proximity(number)
 
 
 # Alternate solution:
-
 
 # Define a function that takes in the input as an argument and uses the absolute value function to check whether the input is within 100 of 1000 or 2000
 def check_proximity_2(number_2):
