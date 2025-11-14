@@ -3,7 +3,7 @@
 # Python Basic Part -I
 
 
-# Exercise 30:
+# Exercise 31:
 
 
 # Problem Statement:
