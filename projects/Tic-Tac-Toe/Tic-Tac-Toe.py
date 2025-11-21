@@ -3,14 +3,6 @@
 import numpy as np
 import random
 
-board = np.zeros((3,3))
-
-print(board)
-
-board_2 = np.array([[1, 0, 0],
-                    [0, 1, 0],
-                    [0, 0, 1]])
-
 def coin_flip():
 
     heads_tails = input("Select Heads or Tails:")
@@ -84,8 +76,8 @@ def win_check(board):
 
     set_length_diag = len(set(np.diag(board)))
     sum_diag = sum(np.diag(board))
-    print(set_length_diag)
-    print(sum_diag)
+    #print(set_length_diag)
+    #print(sum_diag)
     set_length_antidiag = len(set(np.diag(np.fliplr(board))))
     sum_antidiag = sum(np.diag(np.fliplr(board)))
     # print(set_length_antidiag)
@@ -114,11 +106,11 @@ def win_check(board):
     if set_length_diag == 1:
         if sum_diag == 3:
             computer_winner = True
-            print("The computer won along the diagonal")
+            print(board, "The computer won along the diagonal")
             return computer_winner, challenger_winner
         elif sum_diag == 6:
             challenger_winner = True
-            print("The challenger won along the diagonal")
+            print(board, "The challenger won along the diagonal")
             return computer_winner, challenger_winner
         else:
             pass
@@ -126,11 +118,11 @@ def win_check(board):
     if set_length_antidiag == 1:
         if sum_antidiag == 3:
             computer_winner = True
-            print("The computer won along the antidiagonal")
+            print(board, "The computer won along the antidiagonal")
             return computer_winner, challenger_winner
         elif sum_antidiag == 6:
             challenger_winner = True
-            print("The challenger won along the antidiagonal")
+            print(board, "The challenger won along the antidiagonal")
             return computer_winner, challenger_winner
         else:
             pass
@@ -138,11 +130,11 @@ def win_check(board):
     for i in set_lengths_columns:
         if set_lengths_columns == 1 and sum_columns_list == 3:
             computer_winner = True
-            print("The computer won along column %i" % i)
+            print(board, "The computer won along column %i" % i)
             return computer_winner, challenger_winner
         elif set_lengths_columns == 1 and sum_columns_list == 6:
             challenger_winner = True
-            print("The challenger won along column %i" % i)
+            print(board, "The challenger won along column %i" % i)
             return computer_winner, challenger_winner
         else:
             continue
@@ -150,87 +142,29 @@ def win_check(board):
     for i in set_lengths_rows:
         if set_lengths_rows == 1 and sum_rows_list == 3:
             computer_winner = True
-            print("The computer won along column %i" % i)
+            print(board, "The computer won along column %i" % i)
             return computer_winner, challenger_winner
         elif set_lengths_rows == 1 and sum_rows_list == 6:
             challenger_winner = True
-            print("The challenger won along column %i" % i)
+            print(board, "The challenger won along column %i" % i)
             return computer_winner, challenger_winner
         else:
             return computer_winner, challenger_winner
+
+def play_game():
+    board = np.zeros((3,3))
+    computer_first = coin_flip()
     
+    for i in range(10):
+        print(board)
+        board, computer_first = make_move(board, computer_first)
+        computer_winner, challenger_winner = win_check(board)
+        if (computer_winner or challenger_winner) == True:
+            return computer_winner, challenger_winner, board
+        else:
+            continue
 
-
-    
-            
-
-win_check(board_2)
-print(board_2)
-#for i in set_lengths_rows:
-#    if i == 1:
-
-set_length_diag = len(set(np.diag(board)))
-print(np.diag(board))
-print(set_length_diag)
-print(set_lengths_rows)
-print(sum_rows)
-print(set_lengths_columns)
-print(sum_columns)
-print(board)
-
-#def win_check(board):
-
-    # if len(set(board[0])) == 1:
-    #     if sum(board[0]) == 3:
-    #         print("The computer wins along the top row!")
-    #     elif sum(board[0]) == 6:
-    #         print("The challenger wins along the top row!")
-    #     else:
-    #         pass
-    # elif len(set(board[1])) == 1:
-    #     if sum(board[1]) == 3:
-    #         print("The computer wins along the top row!")
-    #     elif sum(board[1]) == 6:
-    #         print("The challenger wins along the top row!")
-    #     else:
-    #         pass
-    # elif len(set(board[2])) == 1:
-    #     if sum(board[2]) == 3:
-    #         print("The computer wins along the top row!")
-    #     elif sum(board[2]) == 6:
-    #         print("The challenger wins along the top row!")
-    #     else:
-    #         pass
-    # elif len(set(board[:,0])) == 1:
-    #     if sum(board[:,0]) == 3:
-    #         print("The computer wins along the top row!")
-    #     elif sum(board[:,0]) == 6:
-    #         print("The challenger wins along the top row!")
-    #     else:
-    #         pass
-    # elif len(set(board[:,1])) == 1:
-    #     if sum(board[:,1]) == 3:
-    #         print("The computer wins along the top row!")
-    #     elif sum(board[:,1]) == 6:
-    #         print("The challenger wins along the top row!")
-    #     else:
-    #         pass
-
-# def play_game():
-#     board = np.zeros((3,3))
-#     computer_first = coin_flip()
-    
-#     win_check_list_2 = (board[1,0], board[1,1], board)
-#     for i in range(10):
-#         if make_move == None:
-#             print("The board is full. Exiting play_game.")
-#             return None
-#         else:
-#             board, computer_first = make_move(board, computer_first)
-#             print(board)
-#     return board
-
-# play_game()
+play_game()
 
 
 '''
