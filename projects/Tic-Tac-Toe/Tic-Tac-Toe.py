@@ -5,20 +5,28 @@ import random
 
 def coin_flip():
 
+    # Prompt an input from the user, which will be used to determine whether the user or the computer will move first
     heads_tails = input("Select Heads or Tails:")
+
+    # Generate a random number (1 or 2) to simulate the result of a coin flip
     flip_result = random.randint(1,2)
+
+    # Initialize a boolean to track whether it is currently the user's or the computer's turn to play
     computer_first = None
 
+    # Convert heads_tales to an integer (1 or 2) to compare to flip_result
     if heads_tails == "Heads":
         heads_tails = 1
     else:
         heads_tails = 2
 
+    # Indicate to the user the result of the coin flip
     if flip_result == 1:
         print("The coin landed on Heads.")
     else:
         print("The coin landed on Tails.")
 
+    # Indicate to the user whether the user or the computer will play first
     if flip_result == heads_tails:
         computer_first = False
         print("You go first!")
@@ -35,30 +43,21 @@ def random_index_from_mask(board):
 
     # Generate a tuple of 1D arrays that makeup the indices of the items in the mask
     candidate_indices = np.where(mask)
-
-    #print(candidate_indices)
-    #print(candidate_indices[0])
-
-    if len(candidate_indices[0]) == 0:
-        print ("The board is full. Exiting random_index_from_mask.")
-        return None
     
+    # Randomly choose an index from candidate_indices
     random_index_in_candidates = np.random.choice(len(candidate_indices[0]))
-    print(random_index_in_candidates)
 
     return tuple(index[random_index_in_candidates] for index in candidate_indices)
 
 def make_move(board, computer_first):
 
-    if random_index_from_mask(board) == None:
-        print("The board is full. Exiting make_move.")
-        return None
-    elif computer_first == True:
+    if computer_first == True:
         affected_square = random_index_from_mask(board)
         board[affected_square] = 1
     else:
         player_move_coordinates = input("Select an empty square to place an 'O' in: (format: row#,column#)")
         player_move_coordinates_int_list = list(map(int, player_move_coordinates.split(',')))
+        # Insert error handling for invalid player move
         board[player_move_coordinates_int_list[0], player_move_coordinates_int_list[1]] = 2
     computer_first = not computer_first
     return board, computer_first
