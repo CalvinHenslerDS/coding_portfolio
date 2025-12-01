@@ -5,15 +5,6 @@ import random
 import pickle
 
 def win_check(board):
-    '''
-    Input:
-    board: 3 x 3 np.array representing the current board state
-
-    Output:
-    1: If player_1 satisfied a win condition
-    2: If player_2 satisfied a win condition
-    None: If neither player satisfied a win condition
-    '''
 
     for i in range(3):
         
@@ -45,10 +36,6 @@ def win_check(board):
 
 # Create a class to build a q table which evaluates and stores the maximum quality of each potential action for a given board state
 class QAgent:
-
-    '''
-    Docstring for QAgent
-    '''
 
     def __init__(self, player_id, epsilon=0.2, alpha=0.3, gamma=0.9):
 
@@ -198,6 +185,8 @@ for i in range(episodes):
             winner = player_1
         elif winner_id == 2:
             winner = player_2
+        else:
+            winner = None
     
         # Assign game_over to true if either player is assigned to winner or if the board is full
         game_over = winner is not None or 0 not in board
