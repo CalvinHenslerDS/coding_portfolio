@@ -247,10 +247,3 @@ for i in range(episodes):
 
 
 print("\nTraining Complete!")
-
-player_1_path = 'player_1_dqn.pth'
-player_2_path = 'player_2_dqn.pth'
-torch.save(player_1.model.state_dict(), player_1_path)
-print(f"Player 1 model saved to {player_1_path}")
-torch.save(player_2.model.state_dict(), player_2_path)
-print(f"Player 2 model saved to {player_2_path}")
