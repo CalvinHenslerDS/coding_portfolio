@@ -145,6 +145,7 @@ class DQNAgent:
             index = row * 3 + column
             mask[index] = qvals[index]
 
+        # Pick the highest Q-value move from the flattened index and return the row, column index
         best_index = np.argmax(mask)
         return (best_index // 3, best_index % 3)
     
@@ -158,6 +159,8 @@ class DQNAgent:
             next_state (np.ndarray): Resulting board state.
             done (bool): Whether the episode terminated after this transition.
         """
+
+        # Store a (state, action, reward, next_state, done) transition in the replay buffer as a tuple
         self.memory.append((state.copy(), action, reward, next_state.copy(), done))
 
     def replay(self):
@@ -170,9 +173,10 @@ class DQNAgent:
         Returns:
             None: This method updates model weights in place.
         """
+
+        # If the memory exceeds the batch size, randomly sample experiences
         if len(self.memory) < self.batch_size:
             return
-        
         batch = random.sample(self.memory, self.batch_size)
 
         states = []
