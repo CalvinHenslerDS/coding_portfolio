@@ -22,14 +22,26 @@ class DQN(nn.Module):
 
     def __init__(self):
         """Initialize the DQN architecture."""
+
+        # Initialize nn.Module internals
         super().__init__()
+
+        # Create a feed-forward neural network
+            # Two hidden layers (with 64 ReLU units)
+        # and outputs:
+            # 
         self.net = nn.Sequential(
+
+            # Flattened 3x3 board
             nn.Flatten(),
+
+            # Two hidden layers with 64 ReLU units
             nn.Linear(9, 64),
             nn.ReLU(),
             nn.Linear(64,64),
             nn.ReLU(),
             nn.Linear(64, 9)
+
         )
 
     def forward(self, x):
@@ -44,7 +56,6 @@ class DQN(nn.Module):
         """
         return self.net(x)
         
-# Create a class to build a q table which evaluates and stores the maximum quality of each potential action for a given board state
 class DQNAgent:
     """Deep Q-Learning agent for playing Tic-Tac-Toe.
     
@@ -72,22 +83,14 @@ class DQNAgent:
             gamma (float, optional): Discount factor. Defaults to 0.9.
             lr (float, optional): Learning rate for optimizer. Defaults to 1e-3.
         """
-        # Initialize player_id (1 or 2) to distinguish between players while training
         self.player_id = player_id
-
-        # Initialize epsilon to establish an exploration rate (the percentage of randomized moves)
         self.epsilon = epsilon
-
-        # Initialize gamma, the discount factor, which determines the importance of future rewards compared to immediate rewards
         self.gamma = gamma
-
         self.memory = deque(maxlen = 50000)
         self.batch_size = 64
-        
         self.model = DQN()
         self.target_model = DQN()
         self.target_model.load_state_dict(self.model.state_dict())
-
         self.optim = optim.Adam(self.model.parameters(), lr = lr)
         self.loss_fn = nn.MSELoss()
 
@@ -125,13 +128,19 @@ class DQNAgent:
         Returns:
             tuple[int, int]: The chosen move as (row, col).
         """
+
+        # Choose a random move epsilon % of the time
         if random.random() < self.epsilon:
             return random.choice(available_moves)
 
+        # Get the predicted Q-values for the current board state
         state = self.get_state_tensor(board)
         qvals = self.model(state)[0].detach().numpy()
 
+        # Mask illegal moves by assigning large, negative Q-values
         mask = np.full(9, -1e9)
+
+        # Assign the proper, predicted Q-values to legal moves
         for (row, column) in available_moves:
             index = row * 3 + column
             mask[index] = qvals[index]
