@@ -20,35 +20,45 @@ try:
 except FileNotFoundError:
     print("File not found.")
 
-# For each range, iterate over each number in the range and compare the first half to the second half
-# Add the number to a list if the first half and the second half are the same
 def fake_finder(input_list):
+    # Initiate an empty list to store fake IDs in
     fake_id_list = []
+
+    # Iterate over each range bookended by the tuple in the input data
     for start, end in input_list:
         for number in range(start, end + 1):
+
+            # Convert each number to a string and find the length of that string
             number_string = str(number)
             string_length = len(number_string)
-            divisible_by = []
-            for i in range(2,string_length):
+
+            # Iterate over half of the length of the string
+            for i in range(1,((string_length//2)+1)):
+
+                # If a factor is found, split the string into that many equal length parts
                 if string_length % i == 0:
                     number_of_segments = string_length / i
-
                     segments = [number_string[j : j + i] for j in range(0, len(number_string), i)]
+
+                    # Initiate a boolean to track whether all parts match each other
                     are_matching = True
+
+                    # Initiate a counter to facilitate the while loop for checking for repeats
                     current_element = 0
-                    while current_element != number_of_segments:
+
+                    # Loop over all elements of the split string
+                    # If they all match, add the ID to the fake ID list (as an integer)
+                    # If not, try again for another factor
+                    while current_element != (number_of_segments-1):
                         if segments[current_element] != segments[current_element+1]:
                             are_matching = False
                         current_element += 1
                     if are_matching == True:
-                        fake_id_list.append(number_string)
-                    
-                    
+                        print(number_string)
+                        fake_id_list.append(int(number_string))
 
-
-                # middle_index = string_length // 2
-                # if number_string[:middle_index] == number_string[middle_index:]:
-                #     fake_id_list.append(number)
+                        # If a pattern is found, break from the loop to avoid double-counting
+                        break
 
     return fake_id_list
 
