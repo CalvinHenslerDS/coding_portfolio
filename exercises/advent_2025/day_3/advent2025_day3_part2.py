@@ -22,54 +22,50 @@ def joltage_maxxing(power_grid):
     for powerbank in power_grid:
 
         # Initialize variables to facilitate candidate battery comparisons
-        candidate_batteries_1 = []
         candidate_battery_dozens = []
-        candidate_batteries_2 = []
-        candidate_batteries_3 = []
-        candidate_batteries_4 = []
-        candidate_batteries_5 = []
-        candidate_batteries_6 = []
-        candidate_batteries_7 = []
-        candidate_batteries_8 = []
-        candidate_batteries_9 = []
-        candidate_batteries_10 = []
-        candidate_batteries_11 = []
-        candidate_battery_12 = 0
-        this_battery_string_working = []
+        this_battery_string = ""
         this_powerbank_max_joltage = 0
+        stored_next_index = 0
 
         # Iterate over the batteries in the bank, and make a list of all batteries with the highest joltage
 
         for i, battery in enumerate(powerbank[:-11]):
-            if i == len(powerbank) - 12:
-                candidate_battery_dozens.append(powerbank[-12:])
+            # if i == len(powerbank) - 12:
+            #     candidate_battery_dozens.append(int(powerbank[-12:]))
             this_battery_joltage = int(battery)
+            if candidate_battery_dozens == []:
+                candidate_battery_dozens.append((i, battery))
+            elif this_battery_joltage == candidate_battery_dozens[0][1]:
+                candidate_battery_dozens.append((i, battery))
+            elif this_battery_joltage > candidate_battery_dozens[0][1]:
+                candidate_battery_dozens = [(i, battery)]
 
-            if this_battery_string_working == []:
-                this_battery_string_working.append(battery)
-
-            elif this_battery_joltage == candidate_batteries_1[0][1]:
-                candidate_batteries_1.append((i, this_battery_joltage))
-
-            elif this_battery_joltage > candidate_batteries_1[0][1]:
-                candidate_batteries_1 = [(i, this_battery_joltage)]
-        this_battery_string = "".join(this_battery_string_working)
         # Iterate over the batteries in the bank to the right of each candidate first battery
-        for index, joltage in candidate_batteries_1:
+        while len(this_battery_string) < 12:
+            for index, joltage in candidate_battery_dozens:
+                this_battery_string = joltage
+                if stored_next_index == 0:
+                    next_index = index + 1
+                else:
+                    next_index = stored_next_index
 
-            next_index = index + 1
+                for number in range(-10, 0):
+                    current_window = powerbank[next_index : number]
+                    candidate_battery = 0
+                    for battery in current_window:
 
-            for battery in powerbank[next_index:]:
+                        this_battery_joltage = int(battery)
+                        next_index += 1
+                        if this_battery_joltage > candidate_battery:
+                            candidate_battery = this_battery_joltage
+                            stored_next_index = next_index     
+                    this_battery_string += str(candidate_battery)
+                joltage = int(this_battery_string)
 
-                this_battery_joltage = int(battery)
 
-                if candidate_battery_2 == 0:
-                    candidate_battery_2 = this_battery_joltage
-                    this_powerbank_max_joltage = (joltage * 10) + this_battery_joltage
-                    
-                elif this_battery_joltage > candidate_battery_2:
-                    candidate_battery_2 = this_battery_joltage
-                    this_powerbank_max_joltage = (joltage * 10) + this_battery_joltage
+
+        
+                
 
         # Once the maximum possible joltage in the bank is found, add it to the list of max joltages
         max_joltages.append(this_powerbank_max_joltage)
