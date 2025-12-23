@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Import data
 def get_data():
     current_directory = Path(__file__).parent
     file_path = current_directory / "advent2025_day5_data1.txt"
@@ -52,7 +53,6 @@ def check_freshness(data_ranges, id_list):
             if int(id) > int(start) and int(id) < int(end):
                 fresh_id_list.append(id)
     
-
     print(len(set(fresh_id_list)))
 
 check_freshness(data_ranges, id_list)

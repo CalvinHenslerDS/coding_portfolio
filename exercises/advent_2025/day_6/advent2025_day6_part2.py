@@ -1,96 +1,51 @@
-# import re
-# import math
-# import numpy as np
-# from pathlib import Path
-
-# def load_data_as_list_of_lists():
-#     file_path = Path(__file__).parent / "advent2025_day6_data.txt"
-#     master_list = []
-    
-#     try:
-#         with open(file_path, 'r') as file:
-#             for line in file:
-#                 tokens = re.findall(r'\d+|\+|\*', line)
-                
-#                 row = [int(t) if t.isdigit() else t for t in tokens]
-                
-#                 if row:
-#                     master_list.append(row)
-                    
-#         return master_list
-
-#     except FileNotFoundError:
-#         print("File not found.")
-#         return []
-
-# math_homework = load_data_as_list_of_lists()
-
-# def homework_completer(math_homework):
-#     solutions_list = []
-#     for column in zip(*math_homework):
-#         working_list_strings = []
-#         working_list_string_lengths = []
-#         cephalopod_list = []
-#         for item in column[:-1]:
-#             working_list_strings.append(str(item))
-#             working_list_string_lengths.append(len(str(item)))
-#         max_string_length = max(working_list_string_lengths)
-
-#         for index in range(0,max_string_length):
-#             this_string = ""
-#             for item in working_list_strings:
-#                 if len(item) > index:
-#                     this_string += item[index]
-#             this_integer = int(this_string)
-#             cephalopod_list.append(this_integer)
-            
-#         if column[-1] == "+":
-#             solution = sum(cephalopod_list)
-#         else:
-#             solution = math.prod(cephalopod_list)
-#         solutions_list.append(solution)
-#         print(solution)
-#     solution_total = sum(solutions_list)
-#     print(solution_total)
-
-test_data = [[1,2,3," ", 3,2,8," "," ",  5,1," ", 6,4," "], 
-  [" ",4,5," ", 6,4," "," ",  3,8,7," ", 2,3," "], 
-   [" "," ",6, " ",9,8," "," ",  2,1,5," ", 3,1,4],
-   ["*"," "," "," ","+"," "," "," ","*"," "," "," ","+"," "," "," "]]
-
-# homework_completer(test_data)
-
 import math
 import os
 
-# Get the directory where the script is located
+# Import data as a list of lists of characters (including spaces)
+
 script_directory = os.path.dirname(__file__) 
-# Join the directory path with the file name
 file_path = os.path.join(script_directory, 'advent2025_day6_data.txt')
 
 try:
     with open(file_path, 'r') as file:
-        # rstrip('\n') removes the newline, list() breaks string into characters
         homework_grid = [list(line.rstrip('\n')) for line in file]
 
 except FileNotFoundError:
     print("Error: data.txt not found in the script directory.")
 
 def homework_completer(input_grid):
+
+    # Add a padding column to the grid to trigger the solution append action for the final problem set later
     for row in input_grid:
         row.append(" ")
+
+    # Initialize variables to facilitate tracking of problems (as they're built) and solutions (as they're calculated)
     non_integer_items = ["+", "*", " "]
     current_problem_numbers = []
     solutions = []
+
+    # Iterate over the columns in the grid
     for column in zip(*input_grid):
+
+        # Initialize a string to build each number in the math problem IAW cephalopod math conventions
         working_column = ""
+
         for item in column:
+
+            # If an item in the column is an integer, add it to the working_column string
             if item not in non_integer_items:
                 working_column += str(item)
+
+            # If an item in the column is an operator, store it as the operator to be used when the solution is calculated for the associated problem
             if item == "*" or item == "+":
                 working_operator = item
+
+        # Append the working_column string to the current_problem_numbers list to facilitate calculation
         if working_column != "":
             current_problem_numbers.append(int(working_column))
+
+        # If the column was all spaces, perform the calculation with the stored current_problem_numbers and working_operator
+        # Append the result to solutions and reset current_problem_numbers in preparation for the next calculation
         else:
             if working_operator == "*":
                 solutions.append(math.prod(current_problem_numbers))
@@ -98,19 +53,9 @@ def homework_completer(input_grid):
             else:
                 solutions.append(sum(current_problem_numbers))
                 current_problem_numbers = []
+
     print(solutions)
     solutions_total = sum(solutions)
     print(solutions_total)
 
 homework_completer(homework_grid)
-        
-
-
-
-
-
-# Loop through each row in your list of lists
-for row in homework_grid:
-    # Slice from the start to index 10
-    first_ten = row[:10]
-    print(first_ten)
