@@ -41,6 +41,7 @@ def zero_counter(instructions_list):
     zero_count = 0
     value = 50
 
+    # Utilize the modulo operator to correctly predict the next location of the dial
     for item in signed_instructions_list:
         value = (value + item) % 100
         if value == 0:

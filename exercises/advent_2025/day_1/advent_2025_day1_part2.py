@@ -37,27 +37,37 @@ def list_converter(instructions_list):
 def zero_counter(instructions_list):
 
     signed_instructions_list = list_converter(instructions_list)
-    #print(signed_instructions_list)
+
     zero_count = 0
     value = 50
 
+    
     for item in signed_instructions_list:
-        #print(item)
+
+        # Use floor division to correctly count the number of times 0 was passed
+        # If turning left, use a negative number for the current dial location and a positive number for the distance turned in the numerator
         if item < 0:
+
             if value == 0:
+                 
                  if item == 0:
                       pass
+                 
+                 # If starting at zero and completing a nonzero dial turn, account for the extra click perceived by the floor division
                  else:
                     zero_count += -1 + (100 - value - item) // 100
+
+            # If starting at a nonzero value, no extra click will be perceived by the floor division
             else:
                 zero_count += (100 - value - item) // 100
+
+        # If turning right, use magnitudes of both the current dial location and the distance turned in the numerator
         else:
             zero_count +=  (value + item) // 100
-        #print(value, item, zero_count)
+
+        # Utilize the modulo operator to correctly predict the next location of the dial
         value = (value + item) % 100
         
-        
-    
     return zero_count
 
 print(zero_counter(instructions_list))
