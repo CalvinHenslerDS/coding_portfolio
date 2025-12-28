@@ -1,6 +1,5 @@
 import numpy as np
 from pathlib import Path
-import random
 from functools import lru_cache
 
 # Import data as a list of lists of characters (including spaces)
