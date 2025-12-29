@@ -42,9 +42,35 @@ if coordinates:
         print(row)
 
 def distance_finder(coordinates):
-    distance_map = {}
+    
+    distances = []
+
     for (i, p1), (j, p2) in combinations(enumerate(coordinates), 2):
         distance = ((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 + (p2[2] - p1[2])**2)**0.5
-        distance_map[(i, j)] = distance
+        distances.append({
+            "pair": (i, j),
+            "coordinates": (p1, p2),
+            "distance": round(distance, 2)
+        })
     
-    return distance_map
+    return distances
+
+distances = distance_finder(coordinates)
+
+sorted_distances = sorted(distances, key=lambda x: x['distance'])
+
+def circuit_maker(sorted_distances, coordinates):
+    circuit_list = []
+    for entry in sorted_distances[:999]:
+        p = entry['pair']
+        c = entry['coordinates']
+        d = entry['distance']
+        circuit_list.append((p[0], p[1], d))
+    for i in range(1, len(circuit_list)):
+        current_item = circuit_list[i]
+        previous_item = circuit_list[i-1]
+            if current_item[0] == previous_item[0]
+    
+
+circuit_maker(sorted_distances, coordinates)
+
