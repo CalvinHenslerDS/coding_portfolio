@@ -1,26 +1,20 @@
 from pathlib import Path
+import math
 from itertools import combinations
 
-# Get the absolute path to the directory where THIS script is saved
+# Import data
 directory = Path(__file__).resolve().parent
 
-# Define the filename
 data = directory / "advent2025_day8_data.txt"
 
 def load_data():
-    # Check if the file actually exists in that folder
     if not data.exists():
         print(f"Error: Could not find '{data.name}' in {directory}")
         return None
-
-    # Read and parse
+    
     try:
         content = data.read_text()
-        
-        # Create list of lists:
-        # 1. splitlines() handles different OS line endings
-        # 2. strip() removes empty lines at the end
-        # 3. int() converts the text to numbers
+
         coordinates = [
             [int(val) for val in line.split(",")]
             for line in content.strip().splitlines()
@@ -33,44 +27,60 @@ def load_data():
         print(f"Data Error: Ensure the file contains only numbers and commas. {e}")
         return None
 
-# Execute the import
 coordinates = load_data()
 
-# Verification: Print the first 3 rows
-if coordinates:
-    for row in coordinates[:3]:
-        print(row)
+# 1. Standard DSU/Union-Find implementation
 
-def distance_finder(coordinates):
+# Create a list where every box points to itself
+parent = list(range(len(coordinates)))
+# Set the size of each box (the length of each circuit) equal to 1
+size = [1] * len(coordinates)
+
+def find(i):
+    # Check whether this box is its own leader
+    if parent[i] == i:
+        return i
     
-    distances = []
+    # Keep checking one step up the chain until the leader is found
+    # Compress the path, so the recursion need not be conducted again for this box
+    parent[i] = find(parent[i])
+    return parent[i]
 
-    for (i, p1), (j, p2) in combinations(enumerate(coordinates), 2):
-        distance = ((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2 + (p2[2] - p1[2])**2)**0.5
-        distances.append({
-            "pair": (i, j),
-            "coordinates": (p1, p2),
-            "distance": round(distance, 2)
-        })
-    
-    return distances
+def union(i, j):
 
-distances = distance_finder(coordinates)
+    # Find the leader of boxes i and j
+    root_i = find(i)
+    root_j = find(j)
 
-sorted_distances = sorted(distances, key=lambda x: x['distance'])
+    if root_i != root_j:
+        # Merge smaller circuit into larger one if the leaders are different
+        if size[root_i] < size[root_j]:
+            root_i, root_j = root_j, root_i
+        parent[root_j] = root_i
+        # Calculate the size of the combined circuit
+        size[root_i] += size[root_j]
+        return True
+    # If the leaders are the same, they are already in the same circuit
+    return False
 
-def circuit_maker(sorted_distances, coordinates):
-    circuit_list = []
-    for entry in sorted_distances[:999]:
-        p = entry['pair']
-        c = entry['coordinates']
-        d = entry['distance']
-        circuit_list.append((p[0], p[1], d))
-    for i in range(1, len(circuit_list)):
-        current_item = circuit_list[i]
-        previous_item = circuit_list[i-1]
-            if current_item[0] == previous_item[0]
-    
+# Get all pairs calculate their distance
+all_edges = []
+for i, j in combinations(range(len(coordinates)), 2):
+    p1, p2 = coordinates[i], coordinates[j]
+    dist = math.sqrt(sum((a - b)**2 for a, b in zip(p1, p2)))
+    all_edges.append((dist, i, j))
 
-circuit_maker(sorted_distances, coordinates)
+# Sort all pairs by distance
+all_edges.sort()
 
+# Call the union functino for the shortest 1000 edges
+for dist, i, j in all_edges[:1000]:
+    union(i, j)
+
+# Get sizes of all unique circuits
+final_sizes = [size[i] for i in range(len(coordinates)) if parent[i] == i]
+final_sizes.sort(reverse=True)
+
+# Multiply the top 3 circuit sizes (node counts)
+result = final_sizes[0] * final_sizes[1] * final_sizes[2]
+print(f"Result: {result}")
