@@ -53,9 +53,9 @@ def zero_counter(instructions_list):
                  if item == 0:
                       pass
                  
-                 # If starting at zero and completing a nonzero dial turn, account for the extra click perceived by the floor division
+                 # If starting at 0 and turning left, simply count the number of complete turns
                  else:
-                    zero_count += -1 + (100 - value - item) // 100
+                    zero_count += - item // 100
 
             # If starting at a nonzero value, no extra click will be perceived by the floor division
             else:
