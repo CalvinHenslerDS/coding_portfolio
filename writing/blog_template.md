@@ -8,34 +8,34 @@ categories: [Advent of Code, Algorithms]
 ## Overview
 In [Day 1 of the Advent of Code 2025 challenge] (https://adventofcode.com/2025/day/1), you find yourself locked out of the North Pole. Fortunately, the elves left a set of convoluted instructions for you to follow in order to obtain the password to a secret entrance.  The crux of this challenge is simulating the behavior of a combination lock.
 
-## The Problem Statement
+## Problem Statement
 The input consists of a sequence of alphanumeric strings: each beginning with an 'L' or 'R' and ending with an integer.  A leading 'L' represents a counter-clockwise turn; a leading 'R' represents a clockwise turn.  The integer represents how many digits to move the dial from the last position.  The starting position is 50.  The largest number on the lock is 99.
 
-**Part 1:** 
-The password to the secret door can by found by tallying up the total number of times the dial ends on 0 after completing an input on the elves' instructions.
+### Part 1
+The password to the secret door can by found by tallying up the total number of times the dial ends on zero after completing an input on the elves' instructions.
 
-**Part 2:**
-It turns out, you were following old protocol.  The actual password can be found by tallying up the total number of times the dial crosses 0 while inputting the eleves' instructions.
+### Part 2
+It turns out, you were following old protocol.  The actual password can be found by tallying up the total number of times the dial crosses zero while inputting the eleves' instructions.
 
 
 ## Strategic Approach
 The difficulty of this challenge comes in simulating the behavior of a combination lock.  A combination lock sweeps through integers in order, skipping from 99 to 0 when turning clockwise or from 0 to 99 when turning counter-clockwise.
 
-**Part 1:**
+### Part 1
 My initial thought was to use a circularly-linked list.  A circularly-linked list is a variation of a linked list in which the last node points back to the first node instead of to None or null.  Though I was confident the circularly-linked list approach would work, I thought it might be interesting to try something else: leveraging the modulo operator to calculate the ending location of the dial after a rotation.
 
 The modulo operator (%) calculates the remainder of a division operation.  For a dial with 100 positions (0 through 99), dividing the sum of the starting position and the input value by 100 should yield the correct final position of the dial after the turn, regardless of the length of the turn.  
 
-**Part 2:**
+### Part 2
 Although counting passed zeros as opposed to landed zeros seems like a trivial evolution, it adds several layers of complication for the approach I selected.  I opted to use floor division (//) to count the number of times zero was passed.  For simple test cases, a straightforward implementation was sufficient; however, I uncovered some quirks of floor division's functionality that I was not previously aware of, which I will discuss in the next section.
 
 
 
 
 ## Implementation
-I built the solutions in Python.  Each solution consists of two primary functions: *list_converter* and *zero_counter*.  
+I built the solutions in Python.  Each solution consists of two primary functions: `list_converter` and `zero_counter`.  
 
-*list_converter* works the same in both parts of the challenge.
+`list_converter` works the same in both parts of the challenge.
 1. **Initialize an empty list** to store signed integers in.  
 2. **Iterate over the input list** of alphanumeric strings.
 3. **Initialize helper variables** to store the direction ('L' or 'R') and the following integer for each element in the elves' instructions.
@@ -68,12 +68,13 @@ def list_converter(instructions_list):
     # 6. Return signed_integer_instructions
     return signed_integer_instructions
 ```
-**Part 1**: Counting zeros as the dial lands on them is straightforward: 
-1. **Call the *list_converter* function** to convert the alphanumeric instructions into a list of usable, signed integers.
-2. **Initialize helper variables**, *zero_count* and *value*.  *zero_count* stores the number of zeros on which the function lands while 'turning the dial.'  *value* stores the integer on which the dial lands after a turn.
-3. **Iterate over the instructions** in *signed_instructions_list* (an output of the *list_converter* function) and apply the modulu operator to the sum of the integer the dial started on (*value*) and the current element in the elves' instructions.
-4. **Add one to *zero_count* if the dial lands on zero** (meaning the modulo operator yielded a value of zero).
-5. **Return *zero_count*.**
+### Part 1
+Counting zeros as the dial lands on them is straightforward: 
+1. **Call the `list_converter` function** to convert the alphanumeric instructions into a list of usable, signed integers.
+2. **Initialize helper variables**, `zero_count` and `value`.  `zero_count` stores the number of zeros on which the function lands while 'turning the dial.'  `value` stores the integer on which the dial lands after a turn.
+3. **Iterate over the instructions** in `signed_instructions_list` (an output of the `list_converter` function) and apply the modulu operator to the sum of the integer the dial started on (`value`) and the current element in the elves' instructions.
+4. **Add one to `zero_count` if the dial lands on zero** (meaning the modulo operator yielded a value of zero).
+5. **Return `zero_count`.**
 
 ```python
 def zero_counter(instructions_list):
@@ -97,16 +98,23 @@ def zero_counter(instructions_list):
     return zero_count
 ```
 
-**Part 2:**: Counting zeros as the dial passes them is more difficult: 
-1. **Call the *list_converter* function** to convert the alphanumeric instructions into a list of usable, signed integers.
-2. **Initialize helper variables**, *zero_count* and *value*.  *zero_count* stores the number of zeros on which the function lands while 'turning the dial.'  *value* stores the integer on which the dial lands after a turn.
-3. **Iterate over the instructions** in *signed_instructions_list* (an output of the *list_converter* function) and apply the modulu operator to the sum of the integer the dial started on (*value*) and the current element in the elves' instructions.
+### Part 2
+Counting zeros as the dial passes them is more difficult: 
+1. **Call the `list_converter` function** to convert the alphanumeric instructions into a list of usable, signed integers.
+2. **Initialize helper variables**, `zero_count` and `value`.  `zero_count` stores the number of zeros on which the function lands while 'turning the dial.'  `value` stores the integer on which the dial lands after a turn.
+3. **Iterate over the instructions** in `signed_instructions_list` (an output of the `list_converter` function) and apply the modulu operator to the sum of the integer the dial started on (`value`) and the current element in the elves' instructions.
 4. **Do nothing for a zero magnitude turn.**
-5. **Use floor division to determine the number of times zero is passed**.  When starting at zero and turning left, there is a subtlety: if a negative number is used for the floor division calculation, the result will not align with the logic we are simulating.  For this reason, flip the sign of the element of *signed_instructions_list* when performing the calculation.  Alternatively, flip the sign of the result.
-6. **Use floor division to determine the number of times zero is passed.**  When performing a counter-clockwise turn starting from a nonzero *value*, we cannot simply flip the sign of the instruction and proceed with floor division as before.  Nor can we simply subtract from *value* because a quirk of floor division with negative numbers is that: $-1 // 2 = -1$ instead of $0$ as we might expect.  There are a number of ways to work around this pitfall, but I opted to maintain an approach that is consistent with the previous step: simulate a logically-equivalent clockwise turn.  To do this, set a starting value of $100$ within the calculation, subtract the starting value, and flip the sign of the element in *signed_instruction_list*.  For a starting value of $40$ and an input of $-110$, our simulation will act as if it is starting at $60=100-40$ and increasing by $110$ (and arriving at $170$) before performing the floor division.  This may seem counterintuitive, but note that turning the dial 30 more clicks in the same direction will register the next zero.  This is logically consistent with our starting parameters and, as it turns out, holds for all edge-cases.
+5. **Use floor division to determine the number of times zero is passed**.  When starting at zero and turning left, there is a subtlety: if a negative number is used for the floor division calculation, the result will not align with the logic we are simulating.  For this reason, flip the sign of the element of `signed_instructions_list` when performing the calculation.  Alternatively, flip the sign of the result.
+6. **Use floor division to determine the number of times zero is passed.**  When performing a counter-clockwise turn starting from a nonzero `value`, we cannot simply flip the sign of the instruction and proceed with floor division as before.  Nor can we simply subtract from `value` because a quirk of floor division with negative numbers is that: `-1 // 2` returns `-1` instead of `0` as we might expect.  There are a number of ways to work around this pitfall, but I opted to maintain an approach that is consistent with the previous step: simulate a logically-equivalent clockwise turn.  To do this, we set an artificial starting value of $100$ minus the actual starting `value` and flip the sign of the element in `signed_instruction_list`.  For a starting value of $40$ and an input of $-110$, our simulation will act as if it is starting at $60$ and increasing by $110$ (arriving at $170$) before performing the floor division.  This may seem counterintuitive, but note that turning the dial 30 more clicks in the same direction will register the next zero.  This is logically consistent with our starting parameters and, as it turns out, holds for all edge-cases.  I have included a table comparing the way floor division operates for negative and positive float results.
+
+| Equation | Float Result | Floor Result | Notes |
+| :- | :- | :- | :- |
+| `150 // 100` | `1.5` | `1` | Behaves like truncation |
+| `-150 // 100` | `-1.5` | `-2` | Rounds away from zero to the next lowest integer |
+
 7. **Use floor division to determine the number of times zero is passed.**  For a clockwise turn, no mental gymnastics are required.
-8. **Update *value* using the modulo operator.**
-9. **Return *zero_count*.**
+8. **Update `value` using the modulo operator.**
+9. **Return `zero_count`.**
 ```python
 def zero_counter(instructions_list):
 
@@ -145,3 +153,31 @@ def zero_counter(instructions_list):
     # 9. Return zero_count 
     return zero_count
 ```
+
+
+## Complexity Analysis
+The requirements of our algorithm grow with the size of our input instructions from the elves ($n$).
+
+### Time Complexity: $O(n)$
+Parts 1 and 2 both have linear time complexity: $O(n)$.
+1. **Conversion:** `list_converter` makes one pass through the input list.  Because string-slicing and integer-conversion are performed on short strings, they are effectively constant-time, $O(1)$, operations, meaning their execution time does not increase with the size of the input data.  However, while processing an individual instruction is a constant-time operation, we must perform this for every instruction in the input, so `list_converter` scales linearly, $O(n)$, with the size of the input
+2. **Simulation:** `zero_counter` makes a second pass through the list.  Every operation inside the loop (whether the modulo math in Part 1 or the conditional floor division logic in Part 2) takes the same amount of time, regardless of how many instructions there are.
+
+The total time, then, is: $O(n)+O(n)=O(2n)$, which simplifies to $O(n)$, as we are only concerned with the shape of the growth, not the exact number of operations.
+
+### Space Complexity: $O(n)$
+The space complexity is also linear, $O(n)$.
+1. **Storage:** `list_converter` creates a new list, `signed_integer_instructions`, which is exactly the same length as the input list.
+2. **Memory Trade-Off:** While this approach uses more memory than processing the strings within the simulation loop, it makes the code more readable and modular, which I elected to prioritize.
+
+| Step | Operation | Time Complexity | Space Complexity |
+| :--- | :--- | :--- | :--- |
+| Preprocessing | `list_converter` | $O(n)$ | $O(n)$ |
+| Simulation | `zero_counter` | $O(n)$ | $O(1)$* |
+| Total | Full Program | $O(n)$ | $O(n)$ |
+
+**The simulation itself is $O(1)$ space, but it relies on the $O(n)$ list created in the preprocessing stage.*
+
+## Conclusion
+
+This challenge gave me the opportunity to utilize some 
