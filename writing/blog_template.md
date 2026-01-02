@@ -9,13 +9,13 @@ categories: [Advent of Code, Algorithms]
 In [Day 1 of the Advent of Code 2025 challenge] (https://adventofcode.com/2025/day/1), you find yourself locked out of the North Pole. Fortunately, the elves left a set of convoluted instructions for you to follow in order to obtain the password to a secret entrance.  The crux of this challenge is simulating the behavior of a combination lock.
 
 ## Problem Statement
-The input consists of a sequence of alphanumeric strings: each beginning with an 'L' or 'R' and ending with an integer.  A leading 'L' represents a counter-clockwise turn; a leading 'R' represents a clockwise turn.  The integer represents how many digits to move the dial from the last position.  The starting position is 50.  The largest number on the lock is 99.
+The input consists of a sequence of alphanumeric strings: each beginning with 'L' or 'R' and ending with an integer.  A leading 'L' represents a counter-clockwise turn; a leading 'R' represents a clockwise turn.  The integer represents how many digits to move the dial from the last position.  The starting position is 50.  The largest number on the lock is 99.
 
 ### Part 1
 The password to the secret door can by found by tallying up the total number of times the dial ends on zero after completing an input on the elves' instructions.
 
 ### Part 2
-It turns out, you were following old protocol.  The actual password can be found by tallying up the total number of times the dial crosses zero while inputting the eleves' instructions.
+It turns out you were following old protocol.  The actual password can be found by tallying up the total number of times the dial crosses zero while inputting the eleves' instructions.
 
 
 ## Strategic Approach
@@ -24,13 +24,30 @@ The difficulty of this challenge comes in simulating the behavior of a combinati
 ### Part 1
 My initial thought was to use a circularly-linked list.  A circularly-linked list is a variation of a linked list in which the last node points back to the first node instead of to None or null.  Though I was confident the circularly-linked list approach would work, I thought it might be interesting to try something else: leveraging the modulo operator to calculate the ending location of the dial after a rotation.
 
-The modulo operator (%) calculates the remainder of a division operation.  For a dial with 100 positions (0 through 99), dividing the sum of the starting position and the input value by 100 should yield the correct final position of the dial after the turn, regardless of the length of the turn.  
+The modulo operator (%) calculates the remainder of a division operation.  For a dial with 100 positions (0 through 99), dividing the sum of the starting position and the input value by 100 should yield the correct final position of the dial after the turn, regardless of the length of the turn. 
+
+For example:
+
+| Equation | Result |
+| :- | :- |
+| `(50 + 20) % 100` | `70` |
+| `(50 + 80) % 100` | `30` |
+| `(50 + 180) % 100` | `30` |
+| `(50 + 50) % 100` | `0` |
+| `(50 - 20) % 100` | `30` |
+| `(50 - 80) % 100` | `70` |
+| `(50 - 180) % 100` | `70` |
+| `(50 - 50) % 100` | `0` |
 
 ### Part 2
-Although counting passed zeros as opposed to landed zeros seems like a trivial evolution, it adds several layers of complication for the approach I selected.  I opted to use floor division (//) to count the number of times zero was passed.  For simple test cases, a straightforward implementation was sufficient; however, I uncovered some quirks of floor division's functionality that I was not previously aware of, which I will discuss in the next section.
+Although counting passed zeros as opposed to landed zeros seems like a trivial evolution, it adds several layers of complication for the approach I selected.  I opted to use floor division (//) to count the number of times zero was passed.  For simple test cases, a straightforward implementation was sufficient; however, one quirk of floor division's functionality led to failure of my initial approach in some edge cases.
 
+| Equation | Float Result | Floor Result | Notes |
+| :- | :- | :- | :- |
+| `150 // 100` | `1.5` | `1` | Behaves like truncation |
+| `-150 // 100` | `-1.5` | `-2` | Rounds away from zero to the next lowest integer |
 
-
+It is important to account for this behavior of negative floats when developing the logic; I will discuss the specifics of my approach in the Implementation section.
 
 ## Implementation
 I built the solutions in Python.  Each solution consists of two primary functions: `list_converter` and `zero_counter`.  
@@ -105,16 +122,12 @@ Counting zeros as the dial passes them is more difficult:
 3. **Iterate over the instructions** in `signed_instructions_list` (an output of the `list_converter` function) and apply the modulu operator to the sum of the integer the dial started on (`value`) and the current element in the elves' instructions.
 4. **Do nothing for a zero magnitude turn.**
 5. **Use floor division to determine the number of times zero is passed**.  When starting at zero and turning left, there is a subtlety: if a negative number is used for the floor division calculation, the result will not align with the logic we are simulating.  For this reason, flip the sign of the element of `signed_instructions_list` when performing the calculation.  Alternatively, flip the sign of the result.
-6. **Use floor division to determine the number of times zero is passed.**  When performing a counter-clockwise turn starting from a nonzero `value`, we cannot simply flip the sign of the instruction and proceed with floor division as before.  Nor can we simply subtract from `value` because a quirk of floor division with negative numbers is that: `-1 // 2` returns `-1` instead of `0` as we might expect.  There are a number of ways to work around this pitfall, but I opted to maintain an approach that is consistent with the previous step: simulate a logically-equivalent clockwise turn.  To do this, we set an artificial starting value of $100$ minus the actual starting `value` and flip the sign of the element in `signed_instruction_list`.  For a starting value of $40$ and an input of $-110$, our simulation will act as if it is starting at $60$ and increasing by $110$ (arriving at $170$) before performing the floor division.  This may seem counterintuitive, but note that turning the dial 30 more clicks in the same direction will register the next zero.  This is logically consistent with our starting parameters and, as it turns out, holds for all edge-cases.  I have included a table comparing the way floor division operates for negative and positive float results.
-
-| Equation | Float Result | Floor Result | Notes |
-| :- | :- | :- | :- |
-| `150 // 100` | `1.5` | `1` | Behaves like truncation |
-| `-150 // 100` | `-1.5` | `-2` | Rounds away from zero to the next lowest integer |
+6. **Use floor division to determine the number of times zero is passed.**  When performing a counter-clockwise turn starting from a nonzero `value`, we cannot simply flip the sign of the instruction and proceed with floor division as before.  Nor can we simply subtract from `value` because a quirk of floor division with negative numbers is that: `-1 // 2` returns `-1` instead of `0` as we might expect.  There are a number of ways to work around this pitfall, but I opted to maintain an approach that is consistent with the previous step: simulate a logically-equivalent clockwise turn.  To do this, we set an artificial starting value of $100$ minus the actual starting `value` and flip the sign of the element in `signed_instruction_list`.  For a starting value of 40 and an input of -110, our simulation will act as if it is starting at 60 and increasing by 110 (arriving at 170) before performing the floor division.  This may seem counterintuitive, but note that turning the dial 30 more clicks in the same direction will register the next zero.  This is logically consistent with our starting parameters and, as it turns out, holds for all edge-cases.  I have included a table comparing the way floor division operates for negative and positive float results.
 
 7. **Use floor division to determine the number of times zero is passed.**  For a clockwise turn, no mental gymnastics are required.
 8. **Update `value` using the modulo operator.**
 9. **Return `zero_count`.**
+
 ```python
 def zero_counter(instructions_list):
 
@@ -180,4 +193,4 @@ The space complexity is also linear, $O(n)$.
 
 ## Conclusion
 
-This challenge gave me the opportunity to utilize some 
+This challenge gave me the opportunity to utilize some common functions in unique contexts and troubleshoot edge-cases in which my code was not working as intended.  I would enjoy attempting some other methods, such as iterating over a circularly-linked list to compare efficiency and simplicity.
