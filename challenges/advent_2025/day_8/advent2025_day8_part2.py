@@ -85,6 +85,7 @@ for dist, i, j in all_edges:
             last_edge = (i, j)
             break
 
+# Calculate the product of the x-coordinates of the nodes of last_edge
 if last_edge:
     idx1, idx2 = last_edge
     x1 = coordinates[idx1][0]
