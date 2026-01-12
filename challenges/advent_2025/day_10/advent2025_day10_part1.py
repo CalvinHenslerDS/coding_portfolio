@@ -21,7 +21,7 @@ def parse_matrix_data(filename):
             if not bracket_match: continue
             bracket_content = bracket_match.group(1)
             # . is even (0), # is odd (1)
-            vector_y = np.array([1 if char == '#' else 0 for char in bracket_content])
+            vector_y = np.array([1 if character == '#' else 0 for character in bracket_content])
             
             # Parse Parenthetical Portions
             paren_matches = re.findall(r'\((.*?)\)', line)
@@ -31,17 +31,17 @@ def parse_matrix_data(filename):
                 indices_lists.append(indices)
             
             # Define dimensions for the button matrix
-            num_rows = len(indices_lists)
-            num_cols = len(vector_y) 
+            number_rows = len(indices_lists)
+            number_columns = len(vector_y) 
             
             # Initialize an empty matrix
-            raw_matrix = np.zeros((num_rows, num_cols), dtype=int)
+            raw_matrix = np.zeros((number_rows, number_columns), dtype=int)
             
             # Populate the empty matrix in accordance with the button wiring schematic
-            for row_idx, col_indices in enumerate(indices_lists):
-                for c_idx in col_indices:
-                    if c_idx < num_cols:
-                        raw_matrix[row_idx, c_idx] = 1
+            for row_index, column_indices in enumerate(indices_lists):
+                for column_index in column_indices:
+                    if column_index < number_columns:
+                        raw_matrix[row_index, column_index] = 1
             
             # Transpose the input matrix
             matrix_a = raw_matrix.T
@@ -69,7 +69,7 @@ def solve_minimal_sum_gf2(A, y):
     m, n = A.shape
     # Horizontally stack the target vector y with the input matrix A
     # Use the modulo operator to map all evens to 0 and odds to 1 to ensure the the entire input is binary in nature
-    A_aug = np.hstack((A, y.reshape(-1, 1))) % 2
+    A_augmented = np.hstack((A, y.reshape(-1, 1))) % 2
     
 
     pivot_row = 0
@@ -80,16 +80,16 @@ def solve_minimal_sum_gf2(A, y):
         if pivot_row >= m: break
         
         # Find the first 1 in column j
-        k = pivot_row + np.argmax(A_aug[pivot_row:, j])
-        if A_aug[k, j] == 0: continue
+        k = pivot_row + np.argmax(A_augmented[pivot_row:, j])
+        if A_augmented[k, j] == 0: continue
         
         # Switch the current row with the identified pivot row (containing the first 1 in column j)
-        A_aug[[pivot_row, k]] = A_aug[[k, pivot_row]]
+        A_augmented[[pivot_row, k]] = A_augmented[[k, pivot_row]]
         
         # If there are other 1s in the column, eliminate them by adding the pivot row to them (resulting in an even element) and computing modulo 2
         for i in range(m):
-            if i != pivot_row and A_aug[i, j] == 1:
-                A_aug[i] = (A_aug[i] + A_aug[pivot_row]) % 2
+            if i != pivot_row and A_augmented[i, j] == 1:
+                A_augmented[i] = (A_augmented[i] + A_augmented[pivot_row]) % 2
         
         # Append the pivot column and move on to the next row (simulating a diagonal stair-step motion along the input matrix)
         pivot_columns.append(j)
@@ -118,7 +118,7 @@ def solve_minimal_sum_gf2(A, y):
             x[pivot_column] = row_sum
         return x
 
-    # 4. Search combinations of free variables for minimum sum
+    # Search combinations of free variables for minimum sum
     best_x = None
     min_sum = float('inf')
     
@@ -132,7 +132,7 @@ def solve_minimal_sum_gf2(A, y):
             
     return best_x
 
-# Example usage with your matrix
+# Call solve_minimal_sum_gf2 function
 total_button_presses = 0
 for i in range(len(data)):
     A = data[i]['matrix_a']
