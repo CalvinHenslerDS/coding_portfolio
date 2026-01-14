@@ -111,9 +111,9 @@ def solve_minimal_sum_gf2(A, y):
         # Set pivot variables based on Row Reduced Echelon Form rows
         for i, pivot_column in enumerate(pivot_columns):
             # The value is the augmented constant XORed with any free variables in that row
-            row_sum = A_aug[i, -1]
+            row_sum = A_augmented[i, -1]
             for f_idx in free_indices:
-                if A_aug[i, f_idx] == 1:
+                if A_augmented[i, f_idx] == 1:
                     row_sum ^= x[f_idx]
             x[pivot_column] = row_sum
         return x
