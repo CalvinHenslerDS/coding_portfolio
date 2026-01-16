@@ -26,10 +26,18 @@ print(list_of_lists[:3]) # Prints first three sub-lists
 def path_finder(list_of_lists):
     paths = []
     for device in list_of_lists:
-        if device == "you":
-            for output in device:
-                paths.append([device, output])
-    for path in paths:
+        if device[0] == "you":
+            for output in device[1:]:
+                paths.append([device[0], output])
+    for i in range(len(paths)):
         for device in list_of_lists:
-            if device == path
+            if device[0] == paths[i][-1]:
+                for output in device[1:]:
+              #      paths.append(paths[i])
+                    paths[i].append(output)
+
+
+    return paths
         
+test = path_finder(list_of_lists)
+print(test)
