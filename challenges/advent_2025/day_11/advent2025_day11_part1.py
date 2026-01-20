@@ -1,4 +1,5 @@
 import pathlib
+import sys
 
 # Get the directory where this script is saved
 current_dir = pathlib.Path(__file__).parent
@@ -20,24 +21,38 @@ with open(file_path, "r") as file:
             # Insert the key as the first element if you want it included
             list_of_lists.append([parts[0].strip()] + items)
 
-# Verify the result
-print(list_of_lists[:3]) # Prints first three sub-lists
+# Parse data into a dictionary for fast lookups
+graph = {}
+for line in list_of_lists:
+    node = line[0]
+    neighbors = line[1:]
+    graph[node] = neighbors
 
-def path_finder(list_of_lists):
-    paths = []
-    for device in list_of_lists:
-        if device[0] == "you":
-            for output in device[1:]:
-                paths.append([device[0], output])
-    for i in range(len(paths)):
-        for device in list_of_lists:
-            if device[0] == paths[i][-1]:
-                for output in device[1:]:
-              #      paths.append(paths[i])
-                    paths[i].append(output)
+# Initialize a memoization dictionary to store results of sub-problems
+memo = {}
 
+def count_paths(current_node):
+    # If we reached the output, we found a single successful path
+    if current_node == 'out':
+        return 1
+    
+    # If the device is not in our list and is not out, it is a dead end
+    if current_node not in graph:
+        return 0
+    
+    # If we have already calculated paths from this node, return it
+    if current_node in memo:
+        return memo[current_node]
+    
+    # Set the total paths equal to the sum of paths from all neighbors
+    total_paths = 0
+    for neighbor in graph[current_node]:
+        total_paths += count_paths(neighbor)
+    
+    # Store and return the count of the result
+    memo[current_node] = total_paths
+    return total_paths
 
-    return paths
-        
-test = path_finder(list_of_lists)
-print(test)
+# Execute count_paths and print the result
+result = count_paths('you')
+print(f"Total number of paths: {result}")
