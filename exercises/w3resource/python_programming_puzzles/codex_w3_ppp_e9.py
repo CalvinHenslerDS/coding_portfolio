@@ -29,5 +29,15 @@ False
 def integer_counter(input_list):
     if len(set(input_list)) != 4:
         return False
-    for index, element in input_list:
-        if 
+    last_element = None
+    for element in input_list[:19]:
+        if last_element == element:
+            return False
+        last_element = element
+    return True
+
+input1 = [1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]
+input2 = [1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3]
+
+print(integer_counter(input1))
+print(integer_counter(input2))
