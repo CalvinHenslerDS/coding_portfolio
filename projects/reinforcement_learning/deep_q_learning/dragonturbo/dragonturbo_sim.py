@@ -83,7 +83,7 @@ class GameEvent(IntEnum):
     ENTER_BATTLESTEP_2 = 1106 # Before the Damage Step
     
 
-    # --- 1200: DAMAGE STEP (Sub-steps 1-7) ---
+    # --- 1200: DAMAGE STEP (SUB-STEPS 1-7) ---
     ENTER_DAMAGE_1 = 1201
     ENTER_DAMAGE_2 = 1202
     ENTER_DAMAGE_3 = 1203
@@ -160,7 +160,7 @@ class MonsterAttribute(Enum):
     LIGHT = "light"
     DIVINE = "divine"
 
-class MonsterCategory(Enum):
+class MonsterCategory1(Enum):
     NORMAL = "normal"
     EFFECT = "effect"
     FUSION = "fusion"
@@ -175,13 +175,27 @@ class MonsterCategory2(Enum):
     TOON = "toon"
     UNION = "union"
 
+class Orientation(Enum):
+    ATTACK = 1
+    DEFENSE = 2
+
 class Position(Enum):
-    ATTACK_FACE_UP = 1
-    DEFENSE_FACE_UP = 2
-    DEFENSE_FACE_DOWN = 3
+    FACEUP = 1
+    FACEDOWN = 2
+
+class Location(Enum):
+    FIELD = 1
+    DECK = 2
+    EXTRA_DECK = 3
+    HAND = 4
+    GRAVEYARD = 5
+    BANISH_ZONE = 6
 
 class Effect(ABC):
-    def __init__(self, speed: Speed):
+    def __init__(
+            self,
+            speed: Speed
+        ):
         self.speed = speed
     
     @abstractmethod
@@ -191,21 +205,60 @@ class Effect(ABC):
 
 class Card(ABC):
    
-    def __init__(self, card_name: str, card_legality: CardLegality, card_text: str):
+    def __init__(
+            self,
+            card_name: str,
+            card_legality: CardLegality,
+            card_text: str
+        ):
         self.card_name = card_name
         self.card_legality = card_legality
         self.card_text = card_text
         self.effects: list[Effect] = []
+        self.location = Location.DECK
+        self._slot = None 
+        self.controller = None
+
+    @property
+    def slot(self):
+        """Returns the slot index only if the card is on the field."""
+        if self.location == Location.FIELD:
+            return self._slot
+        return None
+    
+    @slot.setter
+    def slot(self, value):
+        self._slot = value
+
+    def move_to(self, new_location: Location, new_slot: int = None):
+        """Central method to handle movement and state cleanup."""
+        self.location = new_location
+        self.slot = new_slot
+
+        if new_location in [Location.DECK, Location.HAND, Location.GRAVEYARD]:
+            self.reset_temporary_stats()
 
 class Spell(Card):
 
-    def __init__(self, card_name: str, card_legality: CardLegality, card_text: str, spell_type: SpellType):
+    def __init__(
+            self,
+            card_name: str,
+            card_legality: CardLegality,
+            card_text: str,
+            spell_type: SpellType
+        ):
         super().__init__(card_name, card_legality, card_text)
         self.spell_type = spell_type
 
 
 class Trap(Card):
-    def __init__(self, card_name: str, card_legality: CardLegality, card_text: str, trap_type: TrapType):
+    def __init__(
+            self,
+            card_name: str,
+            card_legality: CardLegality,
+            card_text: str,
+            trap_type: TrapType
+        ):
         super().__init__(card_name, card_legality, card_text)
         self.trap_type = trap_type
 
@@ -220,7 +273,7 @@ class Monster(Card):
             defense: int,
             monster_type: MonsterType,
             monster_attribute: MonsterAttribute,
-            monster_category: MonsterCategory,
+            monster_category_1: MonsterCategory1,
             monster_category_2: list[MonsterCategory2] = None,
             effects: list[Effect] = None
         ):
@@ -236,11 +289,13 @@ class Monster(Card):
         self.defense = defense
 
         self.position: Position = None
+        self.orientation: Orientation = None
+        self.location: Location = None
         self.is_face_up: bool = False
 
         self.monster_type = monster_type
         self.monster_attribute = monster_attribute
-        self.monster_category = monster_category
+        self.monster_category_1 = monster_category_1
         self.monster_category_2 = monster_category_2 or []
         self.effects = effects or []
 
