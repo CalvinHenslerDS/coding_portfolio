@@ -6,7 +6,7 @@ categories: [Advent of Code, Algorithms]
 ---
 
 ## Overview
-In [Day 1 of the Advent of Code 2025 challenge] (https://adventofcode.com/2025/day/1), you find yourself locked out of the North Pole. Fortunately, the elves left a set of convoluted instructions for you to follow in order to obtain the password to a secret entrance.  The crux of this challenge is simulating the behavior of a combination lock.
+In [Day 1 of the Advent of Code 2025 challenge](https://adventofcode.com/2025/day/1), you find yourself locked out of the North Pole. Fortunately, the elves left a set of convoluted instructions for you to follow in order to obtain the password to a secret entrance.  The crux of this challenge is simulating the behavior of a combination lock.
 
 ## Problem Statement
 The input consists of a sequence of alphanumeric strings: each beginning with 'L' or 'R' and ending with an integer.  A leading 'L' represents a counter-clockwise turn; a leading 'R' represents a clockwise turn.  The integer represents how many digits to move the dial from the last position.  The starting position is 50.  The largest number on the lock is 99.
@@ -57,8 +57,8 @@ I built the solutions in Python.  Each solution consists of two primary function
 2. **Iterate over the input list** of alphanumeric strings.
 3. **Initialize helper variables** to store the direction ('L' or 'R') and the following integer for each element in the elves' instructions.
 4. **Assign the correct sign based on the first character of the string**: strings beginning with 'L' will be converted into negative integers, and strings beginning with 'R' will be converted into positive integers.  The magnitude of the integer is equal to the integer converted string following the first character.
-5. **Append the converted list element to *signed_integer_instructions*.** 
-6. **Return *signed_integer_instructions*.**
+5. **Append the converted list element to `signed_integer_instructions`.** 
+6. **Return `signed_integer_instructions`.**
 ```python
 def list_converter(instructions_list):
 
