@@ -28,5 +28,5 @@ A repository for my personal coding challenges, exercises, and projects.
 
 | Project Name | Description | Core Libraries | Status |
 | :--- | :--- | :--- | :--- |
-| Tic-Tac-Toe Deep Q Network | A Deep Q-Learning agent trained to play Tic-Tac-Toe | PyTorch, NumPy, Collections | Complete |
-| Trading Card Game Simulation (Dragon Turbo) |  An object-Oriented Programming-based event-driven trading card game simulation engine  | NumPy, Collections, Logging,Gymnasium | In-Progress |
+| [Tic-Tac-Toe Q-Learning](https://github.com/CalvinHenslerDS/coding_portfolio/tree/main/projects/reinforcement_learning/q_learning/tictactoe) | A Q-Learning-based agent trained to master Tic-Tac-Toe through self-play | NumPy, Pickle, Random | Complete |
+| [Dragon Turbo Simulation and Deep Q Network](https://github.com/CalvinHenslerDS/coding_portfolio/tree/main/projects/reinforcement_learning/deep_q_learning/dragonturbo) |  An object-Oriented Programming-based event-driven trading card game simulation engine to support Deep Q-Learning to optimize gameplay and deck-building | NumPy, Collections, Logging, Gymnasium | In-Progress |

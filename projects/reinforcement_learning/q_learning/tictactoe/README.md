@@ -5,6 +5,8 @@ date: 2026-02-04
 categories: [Projects, Reinforcement Learning, Algorithms]
 ---
 
+-----WORK IN PROGRESS-----
+
 ## Overview
 [Q-Learning](https://en.wikipedia.org/wiki/Q-learning) is a reinforcement learning algorithm that trains an agent to associate specific actions with long-term rewards.  By using the Bellman equation which tuned to iteratively update a Q-Table, the agent iteratively discovers the highest quality moves for any given board position. Because Tic-Tac-Toe has a relatively small state space, it serves as a perfect environment for demonstrating how Q-Learning reaches optimal decision-making.
 
@@ -26,9 +28,81 @@ The agents will receive rewards at the end of each game, incentivizing sequences
 
 This logic is called Temporal Difference Learning. In early games, all Q-Values are 0, and only the last action in a game gets a non-zero update.  As training progresses, the values from the final moves will bleed into the actions that preceded them. In the final stages of training, the agent will see a win coming many moves in advance based on the path formed by the Q-Table it references.
 
-
 ## Implementation
-I built the solutions in Python.  Each solution consists of two primary functions: `list_converter` and `zero_counter`.  
+I tained the agents in `tictactoe_qlearning_train.py`. 
+
+The `win_check` function accepts a boardstate and checks for the satisfaction of a win condition by either player.  It does this systematically by iterating over all of the rows, columns, diagonals, and antidiagonals and determining whether any are comprised of only ones or twos:
+```python
+def win_check(board):
+
+    for i in range(3):
+        
+        # Check whether any rows contain all 1s or 2s
+        if np.all(board[i, :] == 1):
+            return 1
+        if np.all(board[i, :] == 2):
+            return 2
+        
+        # Check whether any columns contain all 1s or 2s
+        if np.all(board[:, i] == 1):
+            return 1
+        if np.all(board[:, i] == 2):
+            return 2
+    
+    # Check whether the diagonal contains all 1s or 2s
+    if np.all(np.diag(board) == 1):
+        return 1
+    if np.all(np.diag(board) == 2):
+        return 2
+    
+    # Check whether the antidiagonal contains all 1s or 2s
+    if np.all(np.diag(np.fliplr(board)) == 1):
+        return 1
+    if np.all(np.diag(np.fliplr(board)) == 2):
+        return 2
+    
+    return None
+```
+The function returns a one if Player One has satisfied a win condition, a two if Player Two has satisfied a win condition, and "None" if neither player has satisfied a win condition.  This function is called after each agent's action to determine whether play should continue or a reward should be distributed.
+
+
+The `QAgent` class utilizes the Bellman Equation to build a Q Table which describes the value of each available action for a given state.
+
+It first initializes all of the relevant attributes:
+- **player_id**: The identifier used to distinguish two participating players from one another.
+- **q_table**: The table in which the quality of each potential action for a given board state will be stored.
+- **epsilon**: The exploration rate, which determines the percentage of the time that a move will be randomized (instead of selecting the highest value action from the Q-Table).
+- **alpha**: The learning rate, which shapes the evolution of the Q-Values in the Q-Table when new information is introduced.
+- **gamma**: The discount factor, which determines the importance of future rewards compared to immediate rewards. 
+
+
+```python
+# Create a class to build a q table which evaluates and stores the maximum quality of each potential action for a given board state
+class QAgent:
+
+    def __init__(self, player_id, epsilon=0.2, alpha=0.3, gamma=0.9):
+
+        # Initialize player_id (1 or 2) to distinguish between players while training
+        self.player_id = player_id
+
+        # Initialize a q_table to store the quality of each potential action for a given board state
+        self.q_table = {}
+
+        # Initialize epsilon to establish an exploration rate (the percentage of randomized moves)
+        self.epsilon = epsilon
+
+        # Initialize alpha, the learning rate, which determineds to what extent newly-acquired information overrides old information
+        self.alpha = alpha
+
+        # Initialize gamma, the discount factor, which determines the importance of future rewards compared to immediate rewards
+        self.gamma = gamma
+```
+
+
+
+-----BELOW THIS LINE IS TEMPLATE FROM ANOTHER README-----
+
+The `save_agent` function
 
 `list_converter` works the same in both parts of the challenge.
 1. **Initialize an empty list** to store signed integers in.  
