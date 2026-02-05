@@ -12,20 +12,20 @@ categories: [Projects, Reinforcement Learning, Algorithms]
 Use Q-Learning to train an unbeatable Tic-Tac-Toe agent. 
 
 ## Strategic Approach
-I will implement a Temporal Difference Q-Learning approach to train two unbeatable Tic-Tac-Toe agents over the course of 100,000 games against each each other.
+I will implement a Temporal Difference Q-Learning approach to train two unbeatable Tic-Tac-Toe agents. Through self-play over 100,000 episodes, the agents will iteratively refine their policies to achieve optimal decision-making.
 
 ### State Representation & Memory
-The 3x3 board can be compressed into a 9-character string, which serves as a unique key in a dictionary.
+The 3x3 board will be compressed into a 9-character string, which will serve as a unique identifier in a hash map (the Q-Table). This table will store the quality of every legal next action for an encountered state.
 
-### Part 2
-Although counting passed zeros as opposed to landed zeros seems like a trivial evolution, it adds several layers of complication for the approach I selected.  I opted to use floor division (//) to count the number of times zero was passed.  For simple test cases, a straightforward implementation was sufficient; however, one quirk of floor division's functionality led to failure of my initial approach in some edge cases.
+### Exploration
+The agents will learn using an $\epsilon$-greedy strategy. Early on, the agents will explore aggressively. As they build out their Q-Tables, $\epsilon$ will decay, resulting in more exploitation of their understanding of the state-space and the quality of available actions. Without an $\epsilon$-greedy strategy, the agents may converge on a suboptimal local maximum (a strategy which is passable but flawed).
 
-| Equation | Float Result | Floor Result | Notes |
-| :- | :- | :- | :- |
-| `150 // 100` | `1.5` | `1` | Behaves like truncation |
-| `-150 // 100` | `-1.5` | `-2` | Rounds away from zero to the next lowest integer |
+### Reward Structure and Bootstrapping
 
-It is important to account for this behavior of negative floats when developing the logic; I will discuss the specifics of my approach in the Implementation section.
+The agents will receive rewards at the end of each game, incentivizing sequences of actions that lead to desirable outcomes (as defined by the reward structure). Winning sequences will receive the largest rewards. Drawing sequences will receive middling rewards.  Losing sequences will receive negative rewards.  Through bootstrapping, the rewards are backpropagated, increasing the perceived value of each state leading up to a winning action and encouraging the agent to pursue those valuable states. 
+
+This logic is called Temporal Difference Learning. In early games, all Q-Values are 0, and only the last action in a game gets a non-zero update.  As training progresses, the values from the final moves will bleed into the actions that preceded them. In the final stages of training, the agent will see a win coming many moves in advance based on the path formed by the Q-Table it references.
+
 
 ## Implementation
 I built the solutions in Python.  Each solution consists of two primary functions: `list_converter` and `zero_counter`.  
