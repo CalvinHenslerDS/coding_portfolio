@@ -5,8 +5,6 @@ date: 2026-02-04
 categories: [Projects, Reinforcement Learning, Algorithms]
 ---
 
------WORK IN PROGRESS-----
-
 ## Overview
 [Q-Learning](https://en.wikipedia.org/wiki/Q-learning) is a reinforcement learning algorithm that trains an agent to associate specific actions with long-term rewards.  By using the Bellman equation which tuned to iteratively update a Q-Table, the agent iteratively discovers the highest quality moves for any given board position. Because Tic-Tac-Toe has a relatively small state space, it serves as a perfect environment for demonstrating how Q-Learning reaches optimal decision-making.
 
@@ -286,12 +284,6 @@ The `save_agent` function saves a trained agent as a `.pkl` file, which converts
 save_agent(player_1, 'player_1_qagent_brain.pkl')
 save_agent(player_2, 'player_2_qagent_brain.pkl')
 ```
-
-
-
-
-
------BELOW THIS LINE IS TEMPLATE FROM ANOTHER README-----
 
 
 ## Complexity Analysis
