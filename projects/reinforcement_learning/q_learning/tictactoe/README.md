@@ -37,25 +37,21 @@ def win_check(board):
 
     for i in range(3):
         
-        # Check whether any rows contain all 1s or 2s
         if np.all(board[i, :] == 1):
             return 1
         if np.all(board[i, :] == 2):
             return 2
         
-        # Check whether any columns contain all 1s or 2s
         if np.all(board[:, i] == 1):
             return 1
         if np.all(board[:, i] == 2):
             return 2
     
-    # Check whether the diagonal contains all 1s or 2s
     if np.all(np.diag(board) == 1):
         return 1
     if np.all(np.diag(board) == 2):
         return 2
     
-    # Check whether the antidiagonal contains all 1s or 2s
     if np.all(np.diag(np.fliplr(board)) == 1):
         return 1
     if np.all(np.diag(np.fliplr(board)) == 2):
@@ -63,7 +59,7 @@ def win_check(board):
     
     return None
 ```
-The function returns a one if Player One has satisfied a win condition, a two if Player Two has satisfied a win condition, and "None" if neither player has satisfied a win condition.  This function is called after each agent's action to determine whether play should continue or a reward should be distributed.
+The function returns a `1` if Player One has satisfied a win condition, a `2` if Player Two has satisfied a win condition, and `None` if neither player has satisfied a win condition.  This function is called after each agent's action to determine whether play should continue or a reward should be distributed.
 
 
 The `QAgent` class utilizes the Bellman Equation to build a Q Table which describes the value of each available action for a given state.
@@ -77,172 +73,280 @@ It first initializes all of the relevant attributes:
 
 
 ```python
-# Create a class to build a q table which evaluates and stores the maximum quality of each potential action for a given board state
 class QAgent:
 
     def __init__(self, player_id, epsilon=0.2, alpha=0.3, gamma=0.9):
-
-        # Initialize player_id (1 or 2) to distinguish between players while training
         self.player_id = player_id
-
-        # Initialize a q_table to store the quality of each potential action for a given board state
         self.q_table = {}
-
-        # Initialize epsilon to establish an exploration rate (the percentage of randomized moves)
         self.epsilon = epsilon
-
-        # Initialize alpha, the learning rate, which determineds to what extent newly-acquired information overrides old information
         self.alpha = alpha
-
-        # Initialize gamma, the discount factor, which determines the importance of future rewards compared to immediate rewards
         self.gamma = gamma
 ```
+
+Next, it defines a function, `get_state_id`, which compresses the board state (a NumPy array) into a 9-character string.  This makes storage and processing much more efficient throughout the training process.
+```python
+    def get_state_id(self,board):
+        return "".join(map(str, board.flatten()))
+```
+
+The `choose_action` function accepts the current board state and the range of available actions, then references the Q-Table to determine the highest quality move from the current position.
+
+First, `get_state_id` is called to compress the array into a string. Then, the function checks whether the key is already listed in `q_table`.  If it isn't, it is added, and the quality of all legal moves is defaulted to zero.
+
+```python
+    def choose_action(self, board, available_moves):
+
+        state = self.get_state_id(board)
+
+        if state not in self.q_table:
+            self.q_table[state] = {move: 0.0 for move in available_moves}
+```
+
+A randomly-generated value between zero and one is compared to the exploration rate, `epsilon`, to determine whether an exploratory (randomly-selected) action will be performed.
+
+```python
+        if random.uniform(0,1) < self.epsilon:
+
+            return random.choice(available_moves)
+```
+
+To select the best action, the function initializes a variable, `best_value` as negative infinity (to ensure that the first Q-Value the agent sees will exceed it). An empty list of `best_moves` is also initialized, and the function loops over the legal actions and their associated Q-Values for the current board state. If an encountered Q-Value is greater than the current `best_value`, `best_value` will be updated to the encountered Q-Value, and the list of `best_moves` will be replaced by the current move.  If an encountered Q-Value is equal to the current `best_value`, the associated action will be appended to `best_moves` instead.  Once all of the legal moves have been examined, an action will be selected from randomly from `best_moves`.
+
+```python
+        best_value = -float('inf')
+
+        best_moves = []
+
+        for move, value in self.q_table[state].items():
+
+            if value > best_value:
+                best_value = value
+                best_moves = [move]
+
+            elif value == best_value:
+                best_moves.append(move)
+
+        return random.choice(best_moves)
+```
+
+The `learn` function accepts the current board state, a selected action, a reward, the next board state, and a boolean stating whether the game has ended. It updates the Bellman Equation to populate the Q-Table with a new Q-Value for the selected action.
+
+It starts by calling `get_state_id` on both the current and the next board (as determined by the selected action).  Then, it checks the Q-Table for its current estimate of the Q-Value for the selected move.
+
+```python
+    def learn(self, board, action, reward, next_board, game_over):
+
+        state = self.get_state_id(board)
+
+        next_state = self.get_state_id(next_board)
+
+        current_q = self.q_table.get(state, {}).get(action, 0.0)
+```
+
+If the action resulted in a win, loss, or draw or if the next state is not already in the Q-Table, set `max_future_q` equal to zero.  Otherwise, set it equal to the highest Q-Value associated with the legal moves of `next_state`.
+
+```python
+        if game_over:
+            max_future_q = 0
+
+        else:
+            if next_state not in self.q_table:
+                max_future_q = 0
+            
+            else:
+                max_future_q = max(self.q_table[next_state].values())
+```
+
+Next, `new_q` is calculated using the Bellman Equation with its associated parameters.  If the state is not in the Q-Table, it gets added.  The Q-Table is then updated with `new_q` to incorporate the learning from the selected action (which looks ahead to see if a favorable outcome is expected based on `max_future_q`). This is the bootstrapping which backpropagates rewards based on the anticipated value of future, legal actions.
+
+```python
+        new_q = current_q + self.alpha * (reward + (self.gamma * max_future_q) - current_q)
+
+        if state not in self.q_table:
+            self.q_table[state] = {}
+
+        self.q_table[state][action] = new_q
+```
+
+Two instances of the QAgent class are then initialized as `player_1` and `player_2`, and the training parameters are established:
+- **episodes**: The number of games the agents will play against each other
+- **min_epsilon**: The minimum allowed value of the exploration rate
+- **epsilon decay**: The rate at which `epsilon` decays from its initial value as training epsiodes are completed
+- **win_reward**: The reward administered via the Bellman Equation following a winning move; +10 ensures that the agents are highly-incentivized to perform actions which may result in winning board states
+- **loss_reward**: The reward administered via the Bellman Equation following a losing move; -10 ensures that the agents are highly-incentivized to avoid actions which may result in losing board states
+- **draw_reward**: The reward administered via the Bellman Equation following a tying move; +2 ensures that the agents are motivated to seek wins over draws but draws over losses
+
+```python
+player_1 = QAgent(player_id=1, epsilon = 0.9)
+player_2 = QAgent(player_id=2, epsilon = 0.9)
+
+episodes = 100000
+min_epsilon = 0.05
+epsilon_decay = 0.99995
+win_reward = 10
+loss_reward = -10
+draw_reward = 2
+```
+
+The agents then prepare to play 100,000 games against each other.  An empty (zero-filled) board is initialized, and `game_over` is set to `False`.  `player_1` is selected to play first, and the states and last actions of both players are set to `None`.
+
+```python
+for i in range(episodes):
+
+    board = np.zeros((3, 3), dtype = int)
+
+    game_over = False
+
+    current_player = player_1
+
+    player_1_last_state = None
+    player_1_last_action = None
+    player_2_last_state = None
+    player_2_last_action = None
+```
+
+A list containing the zipped indices corresponding to each zero on the current board is initialized (and will be maintained throughout each game).  This informs the agents about the `available_moves` from the current board state.
+
+If there are no zeros left on the board, the game ends in a tie.
+
+```python
+while not game_over:
+
+        available_moves = list(zip(*np.where(board == 0)))
+
+        if not available_moves:
+            winner = None
+            game_over = True
+            break
+```
+
+Turns are taken by calling `choose_action` function method on `current_player`.  A copy of the previous board is saved, and the current board is updated with the selected action of the turn player.
+
+After each action, `win_check` is called to determine whether the move resulted in a win.  If the game did not end, the Q-Table of the turn player is updated (with `reward` set to zero). The last state and action of the turn player is recorded, and the other player becomes the new turn player. As the agents learn, the exploration rate decays.
+
+```python
+        action = current_player.choose_action(board, available_moves)
+
+        prev_board_copy = board.copy()
+
+        board[action] = current_player.player_id
+
+        winner_id = win_check(board)
+        if winner_id == 1:
+            winner = player_1
+        elif winner_id == 2:
+            winner = player_2
+        else:
+            winner = None
+    
+        game_over = winner is not None or 0 not in board
+
+        if not game_over:
+            if current_player == player_1 and player_2_last_state is not None:
+                player_2.learn(player_2_last_state, player_2_last_action, 0, board, False)
+            elif current_player == player_2 and player_1_last_state is not None:
+                player_1.learn(player_1_last_state, player_1_last_action, 0, board, False)
+        
+        if current_player == player_1:
+            player_1_last_state, player_1_last_action = prev_board_copy, action
+            current_player = player_2
+        else:
+            player_2_last_state, player_2_last_action = prev_board_copy, action
+            current_player = player_1
+
+    player_1.epsilon = max(min_epsilon, player_1.epsilon * epsilon_decay)
+    player_2.epsilon = max(min_epsilon, player_2.epsilon * epsilon_decay) 
+```
+
+If the last action resulted in a win for either player, update both of their Q-Tables with the appropriate reward (corresponding to a win, loss, or tie).
+
+While the agents are training, a print message appears in the terminal every 10,000 episodes, providing the user with the current episode, the exploration rate of `player_1` to four digits, and the size of the Q-Table.
+
+```python
+    if winner == player_1:
+
+        player_1.learn(player_1_last_state, player_1_last_action, win_reward, board, True)
+        player_2.learn(player_2_last_state, player_2_last_action, loss_reward, board, True)
+
+    elif winner == player_2:
+        player_2.learn(player_2_last_state, player_2_last_action, win_reward, board, True)
+        player_1.learn(player_1_last_state, player_1_last_action, loss_reward, board, True)
+        
+    elif winner is None:
+        player_1.learn(player_1_last_state, player_1_last_action, draw_reward, board, True)
+        player_2.learn(player_2_last_state, player_2_last_action, draw_reward, board, True)
+
+    if i % 10000 == 0:
+        print(f"Episode {i}: P1 Epsilon = {player_1.epsilon:.4f}, Q-Table Size = {len(player_1.q_table)}")
+```
+
+The `save_agent` function saves a trained agent as a `.pkl` file, which converts the entire `QAgent` instance into a byte stream.
+
+```python
+save_agent(player_1, 'player_1_qagent_brain.pkl')
+save_agent(player_2, 'player_2_qagent_brain.pkl')
+```
+
+
 
 
 
 -----BELOW THIS LINE IS TEMPLATE FROM ANOTHER README-----
 
-The `save_agent` function
-
-`list_converter` works the same in both parts of the challenge.
-1. **Initialize an empty list** to store signed integers in.  
-2. **Iterate over the input list** of alphanumeric strings.
-3. **Initialize helper variables** to store the direction ('L' or 'R') and the following integer for each element in the elves' instructions.
-4. **Assign the correct sign based on the first character of the string**: strings beginning with 'L' will be converted into negative integers, and strings beginning with 'R' will be converted into positive integers.  The magnitude of the integer is equal to the integer converted string following the first character.
-5. **Append the converted list element to `signed_integer_instructions`.** 
-6. **Return `signed_integer_instructions`.**
-```python
-def list_converter(instructions_list):
-
-    # 1. Initialize an empty list
-    signed_integer_instructions = []
-
-    # 2. Iterate over the input list
-    for item in instructions_list:
-        
-        # 3. Initialize helper variables
-        direction = item[0]
-        magnitude_int = int(item[1:])
-
-        # 4. Assign the correct sign based on the first character of the string
-        if direction == "R":
-            signed_value = magnitude_int
-
-        else:
-            signed_value = -magnitude_int
-
-        # 5. Append the converted list element to signed_integer_instructions
-        signed_integer_instructions.append(signed_value)
-
-    # 6. Return signed_integer_instructions
-    return signed_integer_instructions
-```
-### Part 1
-Counting zeros as the dial lands on them is straightforward: 
-1. **Call the `list_converter` function** to convert the alphanumeric instructions into a list of usable, signed integers.
-2. **Initialize helper variables**, `zero_count` and `value`.  `zero_count` stores the number of zeros on which the function lands while 'turning the dial.'  `value` stores the integer on which the dial lands after a turn.
-3. **Iterate over the instructions** in `signed_instructions_list` (an output of the `list_converter` function) and apply the modulu operator to the sum of the integer the dial started on (`value`) and the current element in the elves' instructions.
-4. **Add one to `zero_count` if the dial lands on zero** (meaning the modulo operator yielded a value of zero).
-5. **Return `zero_count`.**
-
-```python
-def zero_counter(instructions_list):
-
-    # 1. Call the list_converter function
-    signed_instructions_list= list_converter(instructions_list)
-
-    # 2. Initialize helper variables
-    zero_count = 0
-    value = 50
-
-    # 3. Iterate over the instructions
-    for item in signed_instructions_list:
-        value = (value + item) % 100
-
-        # 4. Add one to the zero count if the dial lands on zero
-        if value == 0:
-            zero_count += 1
-    
-    # 5. Return zero count
-    return zero_count
-```
-
-### Part 2
-Counting zeros as the dial passes them is more difficult: 
-1. **Call the `list_converter` function** to convert the alphanumeric instructions into a list of usable, signed integers.
-2. **Initialize helper variables**, `zero_count` and `value`.  `zero_count` stores the number of zeros on which the function lands while 'turning the dial.'  `value` stores the integer on which the dial lands after a turn.
-3. **Iterate over the instructions** in `signed_instructions_list` (an output of the `list_converter` function) and apply the modulu operator to the sum of the integer the dial started on (`value`) and the current element in the elves' instructions.
-4. **Do nothing for a zero magnitude turn.**
-5. **Use floor division to determine the number of times zero is passed**.  When starting at zero and turning left, there is a subtlety: if a negative number is used for the floor division calculation, the result will not align with the logic we are simulating.  For this reason, flip the sign of the element of `signed_instructions_list` when performing the calculation.  Alternatively, flip the sign of the result.
-6. **Use floor division to determine the number of times zero is passed.**  When performing a counter-clockwise turn starting from a nonzero `value`, we cannot simply flip the sign of the instruction and proceed with floor division as before.  Nor can we simply subtract from `value` because a quirk of floor division with negative numbers is that: `-1 // 2` returns `-1` instead of `0` as we might expect.  There are a number of ways to work around this pitfall, but I opted to maintain an approach that is consistent with the previous step: simulate a logically-equivalent clockwise turn.  To do this, we set an artificial starting value of $100$ minus the actual starting `value` and flip the sign of the element in `signed_instruction_list`.  For a starting value of 40 and an input of -110, our simulation will act as if it is starting at 60 and increasing by 110 (arriving at 170) before performing the floor division.  This may seem counterintuitive, but note that turning the dial 30 more clicks in the same direction will register the next zero.  This is logically consistent with our starting parameters and, as it turns out, holds for all edge-cases.  I have included a table comparing the way floor division operates for negative and positive float results.
-
-7. **Use floor division to determine the number of times zero is passed.**  For a clockwise turn, no mental gymnastics are required.
-8. **Update `value` using the modulo operator.**
-9. **Return `zero_count`.**
-
-```python
-def zero_counter(instructions_list):
-
-    # 1. Call the list converter function
-    signed_instructions_list = list_converter(instructions_list)
-
-    # 2. Initialize helper variables
-    zero_count = 0
-    value = 50
-
-    # 3. Iterate over the instructions
-    for item in signed_instructions_list:
-
-        if item < 0:
-
-            if value == 0:
-                 # 4. Do nothing for a zero magnitude turn
-                 if item == 0:
-                      pass
-                 
-                 # 5. Use floor division to determine the number of times zero is passed
-                 else:
-                    zero_count += - item // 100
-
-            # 6. Use floor division to determine the number of times zero is passed
-            else:
-                zero_count += (100 - value - item) // 100
-
-        # 7. Use floor division to determine the number of times zero is passed
-        else:
-            zero_count +=  (value + item) // 100
-
-        # 8. Update value using the modulo operator
-        value = (value + item) % 100
-
-    # 9. Return zero_count 
-    return zero_count
-```
-
 
 ## Complexity Analysis
-The requirements of our algorithm grow with the size of our input instructions from the elves ($n$).
+The primary bottleneck in this implementation is Python's string manipulation and dictionary overhead.
 
-### Time Complexity: $O(n)$
-Parts 1 and 2 both have linear time complexity: $O(n)$.
-1. **Conversion:** `list_converter` makes one pass through the input list.  Because string-slicing and integer-conversion are performed on short strings, they are effectively constant-time, $O(1)$, operations, meaning their execution time does not increase with the size of the input data.  However, while processing an individual instruction is a constant-time operation, we must perform this for every instruction in the input, so `list_converter` scales linearly, $O(n)$, with the size of the input
-2. **Simulation:** `zero_counter` makes a second pass through the list.  Every operation inside the loop (whether the modulo math in Part 1 or the conditional floor division logic in Part 2) takes the same amount of time, regardless of how many instructions there are.
+### Time Complexity:
 
-The total time, then, is: $O(n)+O(n)=O(2n)$, which simplifies to $O(n)$, as we are only concerned with the shape of the growth, not the exact number of operations.
+`win_check` has linear time complexity: $O(n)$, scaling with the side length, 3.
 
-### Space Complexity: $O(n)$
-The space complexity is also linear, $O(n)$.
-1. **Storage:** `list_converter` creates a new list, `signed_integer_instructions`, which is exactly the same length as the input list.
-2. **Memory Trade-Off:** While this approach uses more memory than processing the strings within the simulation loop, it makes the code more readable and modular, which I elected to prioritize.
+| Operation | Complexity (Generalized $n$) | Complexity (Fixed 3 $\times$ 3) |
+| :--- | :---- | :--- |
+| Row Check | $O(n^2)$ | $O(1)$ |
+| Column Check | $O(n^2)$ | $O(1)$ |
+| Diagonal Check | $O(n)$ | $O(1)$ |
+| Total Time | $O(n)$ | $O(1)$ |
 
-| Step | Operation | Time Complexity | Space Complexity |
-| :--- | :--- | :--- | :--- |
-| Preprocessing | `list_converter` | $O(n)$ | $O(n)$ |
-| Simulation | `zero_counter` | $O(n)$ | $O(1)$* |
-| Total | Full Program | $O(n)$ | $O(n)$ |
+<br>
 
-**The simulation itself is $O(1)$ space, but it relies on the $O(n)$ list created in the preprocessing stage.*
+The training loop has time complexity $O(E)$, which is Linear Time relative to the number of episodes.
+
+| Operation | Complexity (Generalized $N$) | Complexity (Fixed 3 $\times$ 3) |
+| :--- | :---- | :--- |
+| Finding Moves | $O(N^2)$ | $O(1)$ |
+| Choosing Action | $O(A)$ | $O(1)$ |
+| Bellman Update | $O(1)$ | $O(1)$ |
+| Full Match | $O(N^2 \times A)$ | $O(1)$ |
+| All Episodes | $O(E \times N^2)$ | $O(E)$ |
+
+<br>
+
+
+### Space Complexity:
+
+The space complexity of `win_check` is focused on how much additional memory is required to perform the row, column, and diagonal checks.  For a 3 $\times$ 3 board, this is effectively $O(1)$.
+
+| Component | Operation | Space Usage (Generalized $n$) | Complexity (Fixed 3 $\times$ 3) |
+| :--- | :---- | :--- | :--- |
+| Input Board | The 3 $\times$ 3 array stored in memory | $O(n^2)$ | $O(1)$|
+| Slicing | The temporary copy created by `board[i, :]` | $O(n)$ | $O(1)$ |
+| Diagonal Extraction | The new array created by `np.diag(board)` | $O(n)$ | $O(1)$ |
+| Board Mirroring | The copy created by `np.fliplr(board)` | $O(n^2)$ | $O(1)$ |
+| Total Complexity | The extra memory used beyond the input | $O(n^2)$ | $O(1)$ |
+
+<br>
+
+The space complexity of the training loop is primarily driven by the Q-Table, which grows as the agent encounters new board states.  The total complexity for the training loop using the 3 $\times$ 3 Tic-Tac-Toe board is $O(S)$.
+
+| Component | Operation | Space Usage (Generalized $n$) | Complexity (Fixed 3 $\times$ 3) |
+| :--- | :---- | :--- | :--- |
+| Board State | The 3 $\times$ 3 array stored in memory | $O(n^2)$ | $O(1)$|
+| Q-Table (States) | The total unique board positions stored as keys | $O(n)$ | $O(1)$ |
+| Q-Table (Actions) | The dictionary of Q-Values for each move per state | $O(n)$ | $O(1)$ |
+| Recursion | The loop is iterative, not recursive | $O(n^2)$ | $O(1)$ |
+| Total Complexity | The cumulative memory for all encountered states | $O(n^2)$ | $O(1)$ |
 
 ## Conclusion
 
-This challenge gave me the opportunity to utilize some common functions in unique contexts and troubleshoot edge-cases in which my code was not working as intended.  I would enjoy attempting some other methods, such as iterating over a circularly-linked list to compare efficiency and simplicity.
+This project gave me the opportunity to refine my Tic-Tac-Toe simulation logic, modify it for play between agents, and optimize it for training. It also gave me exposure to the Q-Learning algorithm.  Though the application was simple, it laid the foundation for future exploration of similar, more scaleable algorithms (namely Deep Q Network, or DQN), which I will use to optimize agents for real world applications, like my [Dragon Turbo](https://github.com/CalvinHenslerDS/coding_portfolio/tree/main/projects/reinforcement_learning/deep_q_learning/dragonturbo) project.
