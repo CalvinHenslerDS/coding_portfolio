@@ -48,7 +48,7 @@ class QAgent:
         # Initialize epsilon to establish an exploration rate (the percentage of randomized moves)
         self.epsilon = epsilon
 
-        # Initialize alpha, the learning rate, which determineds to what extent newly-acquired information overrides old information
+        # Initialize alpha, the learning rate, which determines to what extent newly-acquired information overrides old information
         self.alpha = alpha
 
         # Initialize gamma, the discount factor, which determines the importance of future rewards compared to immediate rewards
