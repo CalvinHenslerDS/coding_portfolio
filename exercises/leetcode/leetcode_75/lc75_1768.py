@@ -50,17 +50,18 @@ class Solution(object):
         word2_working = word2
         word1_length = len(word1)
         word2_length = len(word2)
-        last_index1 = 0
-        last_index2 = 0
-
-        for letter1 in word1_working:
-            output += letter1
-            word1_working = word1_working[1:]
-            for letter2 in word2_working:
-                    output += letter2
-                    word2_working = word2_working[1:]
-                    break
+        
+        while (len(word1_working) or len(word2_working)) > 0:
+            if len(word1_working) > 0:
+                output += word1_working[0]
+                word1_working = word1_working[1:]
+            if len(word2_working) > 0:
+                output += word2_working[0]
+                word2_working = word2_working[1:]
 
         return output
-    
-                
+
+sol = Solution()
+print(f"inputs: 'abc', 'pqr': {sol.mergeAlternately('abc','pqr')}")
+print(f"inputs: 'ab', 'pqrs': {sol.mergeAlternately('ab','pqrs')}")
+print(f"inputs: 'abcd', 'pq': {sol.mergeAlternately('abcd','pq')}")
