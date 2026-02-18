@@ -38,6 +38,8 @@ Constraints:
 chars[i] is a lowercase English letter, uppercase English letter, digit, or symbol.
 '''
 
+# Wrong space, but functional:
+
 class Solution(object):
     def compress(self, chars):
         """
@@ -48,31 +50,91 @@ class Solution(object):
         character_count = 0
         character_count_1s = 0
         character_count_10s = 0
-        character_counter_100s = 0
+        character_count_100s = 0
         character_count_1000s = 0
+        last_character = ""
         current_character = ""
         s = []
 
-        for character in chars:
+        for index, character in enumerate(chars):
             if current_character == "":
                 current_character = character
-                character_count += 1
-            if character != current_character:
+            if (character != current_character) or (index == len(chars) - 1):
+                if (index == len(chars) - 1) and character != current_character:
+                    last_character = character
+                if (index == len(chars) - 1) and character == current_character:
+                    character_count += 1
                 if character_count > 0:
                     s.append(current_character)
                     current_character = character
-                if character_count > 1:
-                    s.append(character_count)
-                character_count = 0
+                if 1 < character_count <= 9:
+                    s.append(str(character_count))
+                if 10 <= character_count <= 99:
+                    character_count_10s = str(character_count // 10)
+                    character_count_1s = str(character_count % 10)
+                    s.append(character_count_10s)
+                    s.append(character_count_1s)
+                if 100 <= character_count <= 999:
+                    character_count_100s = str(character_count // 100)
+                    character_count_10s = str((character_count % 100) // 10)
+                    character_count_1s = str(character_count % 100)
+                    s.append(character_count_100s)
+                    s.append(character_count_10s)
+                    s.append(character_count_1s)
+                if 1000 <= character_count <= 9999:
+                    character_count_1000s = str(character_count // 1000)
+                    character_count_100s = str((character_count % 1000) // 100)
+                    character_count_10s = str((character_count % 100) // 10)
+                    character_count_1s = str(character_count % 1000)
+                    s.append(character_count_1000s)
+                    s.append(character_count_100s)
+                    s.append(character_count_10s)
+                    s.append(character_count_1s)
+                character_count = 1
+                if last_character != "":
+                    s.append(last_character)
+            else:
+                character_count += 1
 
-
-
-
-
-            
+            #print(character)
+            #print(current_character)
+            #print(character_count)
+        
+        return s
 
 
 sol = Solution()
-print(sol.increasingTriplet([1,2,3,4,5]))
-print(sol.increasingTriplet([5,4,3,2,1]))
-print(sol.increasingTriplet([2,1,5,0,4,6]))
+print(sol.compress(["a","a","b","b","c","c","c"]))
+print(sol.compress(["a"]))
+print(sol.compress(["a","b","b","b","b","b","b","b","b","b","b","b","b"]))
+
+# To use the correct space, write in place:
+
+class Solution2(object):
+    def compress(self, chars):
+        """
+        :type chars: List[str]
+        :rtype: int
+        """
+
+        write = 0
+        read = 0
+
+        while read < len(chars):
+            char = chars[read]
+            count = 0
+
+            # Count the occurrences of the current character
+            while read < len(chars) and chars[read] == char:
+                read += 1
+                count += 1
+
+            chars[write] = char
+            write += 1
+
+            if count > 1:
+                for digit in str(count):
+                    chars[write] = digit
+                    write += 1
+            
+        return write
