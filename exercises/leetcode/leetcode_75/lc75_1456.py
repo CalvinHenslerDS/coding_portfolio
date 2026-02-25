@@ -1,5 +1,6 @@
 '''
-Given a string s and an integer k, return the maximum number of vowel letters in any substring of s with length k.
+Given a string s and an integer k, return the maximum number of vowel letters in any substring
+of s with length k.
 
 Vowel letters in English are 'a', 'e', 'i', 'o', and 'u'.
 
@@ -36,4 +37,26 @@ class Solution(object):
         :type k: int
         :rtype: int
         """
+
+        vowels = {"a", "e", "i", "o", "u"}
+        current_vowel_count = 0
+        left_pointer = 0
+        right_pointer = k - 1
+
+        for index in range(k):
+            if s[index] in vowels: current_vowel_count += 1
+
+        max_vowel_count = current_vowel_count
+
+        for index in range(k,len(s)):
+            if s[left_pointer] in vowels: current_vowel_count -= 1
+            if s[right_pointer + 1] in vowels: current_vowel_count += 1
+            left_pointer, right_pointer = left_pointer + 1, right_pointer + 1
+            if current_vowel_count > max_vowel_count: max_vowel_count = current_vowel_count
         
+        return max_vowel_count
+
+sol = Solution()
+print(sol.maxVowels("abciiidef", 3))
+print(sol.maxVowels("aeiou", 2))
+print(sol.maxVowels("leetcode", 3))
