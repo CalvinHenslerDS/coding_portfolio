@@ -57,7 +57,7 @@ sol = Solution()
 
 print(sol.reverseWords("the sky is blue"))
 
-# Edit in place solution
+# O(1) Solution
 
 class Solution2(object):
     def reverseWords(self, s):
@@ -66,9 +66,50 @@ class Solution2(object):
         :rtype: str
         """
 
-        s.reverse()
+        l = list(s)
+        length = len(l)
 
-        left_pointer = 0
-        right_pointer = 0
+        slow = 0
+        fast = 0
 
+        while fast < length:
+            while fast < length and l[fast] == ' ':
+                fast += 1
+            if fast < length:
+                if slow != 0:
+                    l[slow] = ' '
+                    slow += 1
+
+                while fast < length and l[fast] != ' ':
+                    l[slow] = l[fast]
+                    slow += 1
+                    fast += 1
         
+        l = l[:slow]
+        length = len(l)
+
+        self.reverse_segment(l, 0, length -1)
+
+        start = 0
+        for end in range(length + 1):
+            if end == length or l[end] == ' ':
+                self.reverse_segment(l, start, end - 1)
+                start = end + 1
+        return "".join(l)
+    
+    def reverse_segment(self, l, left, right):
+        '''
+        Helper to reverse a portion of the list in-place.
+
+        :type l: list
+        :type left: int
+        :type right: int
+        '''
+        while left < right:
+            l[left], l[right] = l[right], l[left]
+            left += 1
+            right -= 1
+
+sol = Solution2()
+
+print(sol.reverseWords("the sky is blue"))
