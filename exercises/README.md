@@ -30,7 +30,7 @@ The sliding window algorithm is a problem-solving technique used to efficiently 
 | Example Exercises |  |
 | -------- | -------- |
 | [LeetCode #643](https://leetcode.com/problems/maximum-average-subarray-i/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_643.py) |
-| [LeetCode #1456](https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/?envType=study-plan-v2&envId=leetcode-75) | Solution in Progress |
+| [LeetCode #1456](https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1456.py)] |
 
 ## Prefix Sum
 
@@ -107,6 +107,6 @@ A simulation algorithm computers the behavior of a system over time by initializ
 
 | Example Exercises | |
 | -------- | -------- |
+| [LeetCode #1071](https://leetcode.com/problems/greatest-common-divisor-of-strings/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1071.py) |s
 | [LeetCode #1431](https://leetcode.com/problems/kids-with-the-greatest-number-of-candies/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1431.py) |
-| [LeetCode #1071](https://leetcode.com/problems/greatest-common-divisor-of-strings/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1071.py) |
 | [LeetCode #1768](https://leetcode.com/problems/merge-strings-alternately/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1768.py)
