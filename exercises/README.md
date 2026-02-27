@@ -30,7 +30,8 @@ The sliding window algorithm is a problem-solving technique used to efficiently 
 | Example Exercises |  |
 | -------- | -------- |
 | [LeetCode #643](https://leetcode.com/problems/maximum-average-subarray-i/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_643.py) |
-| [LeetCode #1456](https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1456.py)] |
+| [LeetCode #1004](https://leetcode.com/problems/max-consecutive-ones-iii/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1004.py) |
+| [LeetCode #1456](https://leetcode.com/problems/maximum-number-of-vowels-in-a-substring-of-given-length/?envType=study-plan-v2&envId=leetcode-75) | [My Solution](https://github.com/CalvinHenslerDS/coding_portfolio/blob/main/exercises/leetcode/leetcode_75/lc75_1456.py) |
 
 ## Prefix Sum
 
