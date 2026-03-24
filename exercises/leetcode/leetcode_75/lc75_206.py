@@ -41,6 +41,9 @@ class ListNode:
         self.next = next
 
 class Solution(object):
+
+    # Iterative (O(1) Space Complexity)
+
     def reverseList(self, head):
         """
         :type head: Optional[ListNode]
@@ -57,6 +60,22 @@ class Solution(object):
             current_node = next_node
             
         return previous_node
+    
+    # Recursive (O(n) Space Complexity)
+
+    def reverseList2(self, head):
+        """
+        :type head: Optional[ListNode]
+        :rtype: Optional[ListNode]
+        """
+
+        if not head or not head.next:
+            return head
+        
+        new_head = self.reverseList2(head.next)
+        head.next.next = head
+        head.next = None
+        return new_head
     
 def build_list(arr):
     if not arr: return None
