@@ -59,19 +59,16 @@ class Solution:
                 return 0
             
             count = 0
-            # Check if current node is "Good"
+
             if node.val >= max_so_far:
                 count = 1
-                # Update the maximum for the children's paths
                 max_so_far = node.val
             
-            # Add results from left and right subtrees
             count += dfs(node.left, max_so_far)
             count += dfs(node.right, max_so_far)
             
             return count
 
-        # Start DFS with the root's value as the initial max
         return dfs(root, root.val)
     
 from collections import deque
@@ -93,16 +90,11 @@ def build_tree(arr):
         i += 1
     return root
 
-# --- TEST CASES ---
 if __name__ == "__main__":
     sol = Solution()
 
-    # Example 1: [3, 1, 4, 3, None, 1, 5]
-    # Root (3) is good. 4 is good. 5 is good. 3 (leaf) is good.
     root1 = build_tree([3, 1, 4, 3, None, 1, 5])
-    print(f"Example 1 Good Nodes: {sol.goodNodes(root1)}") # Output: 4
+    print(f"Example 1 Good Nodes: {sol.goodNodes(root1)}")
 
-    # Example 2: [3, 3, None, 4, 2]
-    # Root (3), 3 (child), and 4 are good. 2 is NOT good (3 is on the path).
     root2 = build_tree([3, 3, None, 4, 2])
-    print(f"Example 2 Good Nodes: {sol.goodNodes(root2)}") # Output: 3
+    print(f"Example 2 Good Nodes: {sol.goodNodes(root2)}")
