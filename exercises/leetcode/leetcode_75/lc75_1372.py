@@ -50,21 +50,15 @@ class Solution:
             if not node:
                 return
             
-            # Update the global maximum
             self.max_length = max(self.max_length, current_len)
             
             if go_left:
-                # To continue a ZigZag, we must now go RIGHT
                 dfs(node.left, False, current_len + 1)
-                # Or, we start a NEW ZigZag by going LEFT again
                 dfs(node.right, True, 1)
             else:
-                # To continue a ZigZag, we must now go LEFT
                 dfs(node.right, True, current_len + 1)
-                # Or, we start a NEW ZigZag by going RIGHT again
                 dfs(node.left, False, 1)
 
-        # Start DFS in both directions from the root
         dfs(root.left, False, 1)
         dfs(root.right, True, 1)
         
@@ -83,12 +77,10 @@ def build_tree(arr):
     i = 1
     while queue and i < len(arr):
         node = queue.popleft()
-        # Left Child
         if i < len(arr) and arr[i] is not None:
             node.left = TreeNode(arr[i])
             queue.append(node.left)
         i += 1
-        # Right Child
         if i < len(arr) and arr[i] is not None:
             node.right = TreeNode(arr[i])
             queue.append(node.right)
@@ -98,9 +90,7 @@ def build_tree(arr):
 if __name__ == "__main__":
     sol = Solution()
     
-    # Example 1 Array
     arr = [1,None,1,1,1,None,None,1,1,None,1,None,None,None,1,None,1]
-    # (Note: Use None instead of null in Python)
     root = build_tree([1,None,1,1,1,None,None,1,1,None,1,None,None,None,1,None,1])
     
-    print(f"Longest ZigZag: {sol.longestZigZag(root)}") # Expected: 3
+    print(f"Longest ZigZag: {sol.longestZigZag(root)}")
