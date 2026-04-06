@@ -6,7 +6,7 @@ from itertools import combinations
 CARD_LIBRARY = {
 
     "Red-Eyes Darkness Metal Dragon": {"val": 0, "tags": {"dragon", "dark"}},
-    "Blue-Eyes White Dragon": {"val": 0, "tags": {"light", "dragon", "level 8", "beat stick"}},
+    "Blue-Eyes White Dragon": {"val": 0, "tags": {"light", "dragon", "level 8", "payoff"}},
     "White Stone of Legend": {"val": 0, "tags": {"light", "tuner", "dragon", "debris target", "starter"}},
     "Debris Dragon": {"val": 0, "tags": {"tuner", "dragon", "starter"}},
     "Tragoedia": {"val": 0, "tags": {"dark", "hand trap"}},
@@ -14,11 +14,11 @@ CARD_LIBRARY = {
     "Gorz the Emissary of Darkness": {"val": 0, "tags": {"dark", "hand trap"}},
     "Morphing Jar": {"val": 0, "tags": set()},
     "Flamvell Guard": {"val": 0, "tags": {"tuner", "dragon", "debris target", "starter"}},
-    "Tri-Horned Dragon": {"val": 0, "tags": {"dark", "dragon", "level 8", "beat stick"}},
+    "Tri-Horned Dragon": {"val": 0, "tags": {"dark", "dragon", "level 8", "payoff"}},
     "Koa'ki Meiru Drago": {"val": 0, "tags": {"dragon", "payoff"}},
     "Prime Material Dragon": {"val": 0, "tags": {"light", "dragon", "payoff"}},
     "Battle Fader": {"val": 0, "tags": {"dark", "hand trap"}},
-    "Exodius": {"val": 0, "tags": {"dark"}},
+    "Exodius the Ultimate Forbidden Lord": {"val": 0, "tags": {"dark"}},
     "Card Trooper": {"val": 0, "tags": {"debris target"}},
     "Snipe Hunter": {"val": 0, "tags": {"dark"}},
     "Frost and Flame Dragon": {"val": 0, "tags": {"dragon", "water"}},
@@ -56,12 +56,113 @@ CARD_LIBRARY = {
 
 }
 
-# Define your specific hard-coded combinations
-# We use frozenset so order doesn't matter: ("A","B") == ("B","A")
-TRIPLE_COMBOS = {
-    frozenset(["Wizard", "Mana Crystal", "Fireball"]): 15,
-    frozenset(["Dragon", "Dragon", "Dragon"]): 20
-}
+def evaluate_dynamic_synergies(hand_names, hand_data):
+    bonus = 0
+    discard_count = 0
+    added_bewd_count = 0
+    
+    reckless_count = hand_names.count("Reckless Greed")
+    bewd_count = hand_names.count("Blue-Eyes White Dragon")
+    wsol_count = hand_names.count("White Stone of Legend")
+    tradein_count = hand_names.count("Trade-In")
+    coc_count = hand_names.count("Cards of Consonance")
+    rejuvenation_count = hand_names.count("Super Rejuvenation")
+    mse_count = hand_names.count("Magical Stone Excavation")
+    debris_count = hand_names.count("Debris Dragon")
+    guard_count = hand_names.count("Flamvell Guard")
+
+    wsol_in_grave = False
+
+    rejuvenation_resolutions = rejuvenation_count
+
+    tuner_count = sum(1 for card in hand_data if "tuner" in card["tags"])
+    level8_count = sum(1 for card in hand_data if "level 8" in card["tags"])
+    dragon_count = sum(1 for card in hand_data if "dragon" in card["tags"])
+
+    if "Future Fusion" in hand_names:
+        added_bewd_count += min(3 - bewd_count, 3 - wsol_count)
+        wsol_in_grave = True
+
+    if "Foolish Burial" in hand_names:
+        if bewd_count + added_bewd_count < 3:
+            wsol_in_grave = True
+            added_bewd_count += 1
+
+    wsolcoc_resolutions = min(coc_count, wsol_count)
+    if wsolcoc_resolutions > 0:
+        wsol_in_grave = True
+        coc_count -= wsolcoc_resolutions
+        tuner_count -= wsolcoc_resolutions
+        wsol_count -= wsolcoc_resolutions
+        dragon_count -= wsolcoc_resolutions
+        discard_count += wsolcoc_resolutions
+        added_bewd_count += min(3 - bewd_count - added_bewd_count, wsolcoc_resolutions)
+
+    nonwsolcoc_resolutions = min(coc_count, tuner_count)
+    if nonwsolcoc_resolutions > 0:
+        debris_count -= nonwsolcoc_resolutions - guard_count
+        tuner_count -= nonwsolcoc_resolutions
+        dragon_count -= nonwsolcoc_resolutions
+        discard_count += nonwsolcoc_resolutions
+
+    if {"Instant Fusion", "Trade-In"}.issubset(set(hand_names)) and bewd_count + added_bewd_count == 0:
+        if wsol_count > 0 or (debris_count > 0 and wsol_in_grave):
+            dragon_count -= 1
+            added_bewd_count += 1
+
+    level8_count += added_bewd_count
+
+    tradein_resolutions = min(tradein_count, level8_count)
+    dragon_count -= tradein_resolutions
+
+    bonus += tradein_resolutions * 0
+    bonus += wsolcoc_resolutions * 0
+    bonus += nonwsolcoc_resolutions * 0
+
+    dragon_count += added_bewd_count
+
+    if reckless_count == 2:
+        bonus += 0
+    if reckless_count == 3:
+        bonus += 0
+    
+    if "Allure of Darkness" in hand_names:
+        if any("dark" in card["tags"] for card in hand_data):
+            bonus += 0
+
+    if "Red-Eyes Darkness Metal Dragon" in hand_names:
+        if any("starter" in card["tags"] for card in hand_data):
+            if any("payoff" in card["tags"] for card in hand_data):
+                bonus+= 0
+    
+    if debris_count > 0:
+        if any("debris target" in card["tags"] for card in hand_data):
+            bonus += 0
+    
+    if "Instant Fusion" in hand_names:
+        if "Prime Material Dragon" in hand_names:
+            bonus += 0
+        if tuner_count > 0:
+            bonus += 0
+
+    if rejuvenation_count > 0:
+        if mse_count > 0:
+            rejuvenation_resolutions += mse_count
+            discard_count += min(dragon_count, 2 * mse_count)
+            dragon_count -= min(dragon_count, 2 * mse_count)
+    
+    if "Card Destruction" in hand_names:
+        discard_count += dragon_count
+    
+    if {"Future Fusion", "Pot of Avarice"}.issubset(set(hand_names)):
+        bonus += 0
+    
+    if "Morphing Jar" in hand_names:
+        bonus += 0 * dragon_count
+
+    bonus += rejuvenation_resolutions * discard_count * 0
+
+    return bonus
 
 # --- 2. THE MULTI-PASS EVALUATOR ---
 def evaluate_hand(hand_names):
@@ -73,43 +174,7 @@ def evaluate_hand(hand_names):
     # Summing the "val" of every card in hand
     score += sum(card["val"] for card in hand_data)
 
-    # PASS 2: Tag-Based Pair Synergy
-    # We check every unique pair for specific tag interactions
-    for c1, c2 in combinations(hand_data, 2):
-        t1, t2 = c1["tags"], c2["tags"]
-        
-        if "dark" in t1 and c2 == "Allure of Darkness": score += 0
-        if "dark" in t2 and c1 == "Allure of Darkness": score += 0
-
-        if "level 8" in t1 and c2 == "Trade-In": score += 0
-        if "level 8" in t2 and c1 == "Trade-In": score += 0
-
-        if "tuner" in t1 and c2 == "Cards of Consonance": score += 0
-        if "tuner" in t2 and c1 == "Cards of Consonance": score += 0
-
-        if "starter" in t1 and c2 == "Red-Eyes Darkness Metal Dragon": score += 0
-        if "starter" in t2 and c1 == "Red-Eyes Darkness Metal Dragon": score += 0
-
-        if "debris target" in t1 and c2 == "Debris Dragon": score += 0
-        if "debris target" in t2 and c1 == "Debris Dragon": score += 0
-
-        if "tuner" in t1 and c2 == "Instant Fusion": score += 0
-        if "tuner" in t2 and c1 == "Instant Fusion": score += 0
-        
-        # Example: Fire + Ice anti-synergy (penalty)
-        if "fire" in t1 and "ice" in t2: score -= 1
-        if "fire" in t2 and "ice" in t1: score -= 1
-
-    # PASS 3: Hard-Coded Combinations & Tag Thresholds
-    # A) Check specific hard-coded triples
-    for triple in combinations(hand_names, 3):
-        if frozenset(triple) in TRIPLE_COMBOS:
-            score += TRIPLE_COMBOS[frozenset(triple)]
-
-    # B) Check Tag "Critical Mass" (e.g., a "Fire" deck bonus)
-    all_tags_in_hand = [tag for card in hand_data for tag in card["tags"]]
-    if all_tags_in_hand.count("fire") >= 3:
-        score += 10  # "Blaze" bonus for having 3+ fire tags
+    score += evaluate_dynamic_synergies(hand_names, hand_data)
         
     return score
 
