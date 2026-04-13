@@ -1,10 +1,8 @@
 import random
+import matplotlib.pyplot as plt
 from itertools import combinations
-
 import math
 
-# --- 1. DATA CONFIGURATION ---
-# Using sets {} for tags allows for faster lookups and set math
 CARD_LIBRARY = {
 
     "Red-Eyes Darkness Metal Dragon": {"val": 0, "tags": {"dragon", "dark"}},
@@ -58,8 +56,6 @@ CARD_LIBRARY = {
 
 }
 
-import random
-
 def resolve_future_fusion(hand, deck, grave):
     priority_pool = [
         "White Stone of Legend", "White Stone of Legend", "White Stone of Legend",
@@ -106,6 +102,92 @@ def resolve_future_fusion(hand, deck, grave):
             hand.append("Blue-Eyes White Dragon")
     
     return hand, deck, grave
+
+# Implement expected value of drawing into rejuv for non-rejuv hands
+
+def get_dynamic_weight(card_name, hand, deck, grave, discard_count):
+    tags = CARD_LIBRARY[card_name]["tags"]
+    count_in_hand = hand.count(card_name)
+    
+#     "Red-Eyes Darkness Metal Dragon": {"val": 0, "tags": {"dragon", "dark"}},
+#     "Tragoedia": {"val": 90, "tags": {"dark", "hand trap"}},
+#     "Gorz the Emissary of Darkness": {"val": 85, "tags": {"dark", "hand trap"}},
+#     "Debris Dragon"
+#     "White Stone of Legend"
+#     "Flamvell Guard": {"val": 30, "tags": {"tuner", "dragon", "debris target", "starter"}},
+#     "Tri-Horned Dragon": {"val": 0, "tags": {"dark", "dragon", "level 8", "payoff"}},
+#     "Koa'ki Meiru Drago": {"val": 60, "tags": {"dragon", "payoff"}},
+#     "Prime Material Dragon": {"val": 0, "tags": {"light", "dragon", "payoff"}},
+#     "Snipe Hunter": {"val": 40, "tags": {"dark"}},
+
+#     "Super Rejuvenation": {"val": 0, "tags": set()},
+#     "Pot of Avarice": {"val": 0, "tags": set()},
+#     "Card Destruction": {"val": 50, "tags": set()},
+#     "Future Fusion": {"val": 20, "tags": set()},
+#     "Foolish Burial"
+#     "Dark World Dealings": {"val": 3, "tags": set()},
+
+
+    if card_name in [
+        "Reckless Greed",
+        "Trap Dustshoot"
+    ]:
+        return 100
+    
+    if card_name in [
+        "Pot of Avarice", 
+        "Heavy Storm", 
+        "Giant Trunade",
+        "Instant Fusion",
+        "Vortex Trooper",
+        "Morphing Jar",
+        "Card Trooper",
+        "Sangan",
+        "Snipe Hunter"
+    ]:
+        return -100
+    
+    if card_name in [
+        "Torrential Tribute",
+    ]:
+        return 50
+    if card_name in [
+        "Mirror Force"
+    ]:
+        return 45
+
+    if card_name in ["Magical Stone Excavation"]:
+        if "Super Rejuvenation" not in hand:
+            return -100
+        else:
+            dragons_in_hand =  sum(1 for c in hand if "dragon" in CARD_LIBRARY[c]["tags"])
+            return 5 + ((min(2,dragons_in_hand) + discard_count) * 50)
+
+    if "level 8" in tags:
+        tradeins_in_deck = deck.count("Trade-In")
+        # Weight scales: 0 Trade-Ins = 5 pts, 3 Trade-Ins = 50 pts
+        return 5 + (tradeins_in_deck * 10)
+
+    if "tuner" in tags:
+        coc_in_deck = deck.count("Cards of Consonance")
+        return 5 + (coc_in_deck * 10)
+
+    if card_name == "Trade-In":
+        targets_in_deck = sum(1 for c in deck if "level 8" in CARD_LIBRARY[c]["tags"])
+        return 5 + (targets_in_deck * 10)
+
+    if card_name == "Cards of Consonance":
+        targets_in_deck = sum(1 for c in deck if "tuner" in CARD_LIBRARY[c]["tags"])
+        return 5 + (targets_in_deck * 10)
+
+    if card_name == "Allure of Darkness":
+        targets_in_deck = sum(1 for c in deck if "dark" in CARD_LIBRARY[c]["tags"])
+
+    if count_in_hand > 1:
+        weight -= 50
+
+    # Default to the library's base value
+    return CARD_LIBRARY[card_name].get("val", 40)
 
 def simulate_hand_resolution(starting_hand, starting_deck, starting_grave):
     hand = list(starting_hand)
@@ -430,7 +512,7 @@ def print_percentiles(results):
 
 print_percentiles(raw_data)
 
-import matplotlib.pyplot as plt
+
 
 def plot_score_distribution(results):
     scores = [res['total'] for res in results]
